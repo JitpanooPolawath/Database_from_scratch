@@ -80,7 +80,7 @@ void datapage::createIntermediate(){
     }
     datapageFile.seekp(8192,std::fstream::beg);
     // Create intermediate page and 
-    int8_t tempFull = 0;
+    uint8_t tempFull = 0;
     uint8_t emptyRow = 0;
     uint16_t startingBytes = 8096;
     datapageFile.write(reinterpret_cast<char*>(&emptyRow),sizeof(emptyRow));
