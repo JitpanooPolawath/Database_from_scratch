@@ -7,6 +7,12 @@
 #include <string>
 #include <list>
 
+struct columnType{
+    bool isChar;
+    // Length of char
+    int charLength;
+};
+
 struct returnHeader {int parentRow; int parentBytes;};
 
 class datapage {
@@ -25,7 +31,6 @@ private:
     std::string logFileName;
     std::fstream datapageFile;
     std::fstream logFile;
-    
 
 public:
     datapage(std::string tableName);
@@ -34,7 +39,7 @@ public:
     void createRoot();
     void createIntermediate();
     void createDataPage();
-    void createLogFile();
+    void setLogFile(std::string name, columnType types);
 };
 
 #endif

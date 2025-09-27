@@ -3,25 +3,45 @@
 #include <string>
 #include "includes/datapage.h"
 
-void readInput(std::string* input ){
+void readInitialInput(std::string* input ){
     std::cout << "Enter your query or type --help for more info: " << std::endl;
-    std::getline(std::cin,*input);
+    std::cin >> *input;
+    if(input->compare("--help") == 0){
+        std::cout <<"In help section"<<std::endl;
+    }
 }
+
+// Read user inputs, then while loop getting user inputs 
+// void readInputColumn(datapage datapageName){
+//     // example case
+//     for(int i = 0; i < 4; i++ ){
+//         std::string name = "test" + i;
+//         columnType types;
+//         if(i % 2 == 0){
+//             types.isChar = true;
+//             types.charLength = 20;
+//         }else{
+//             types.isChar = false;
+//         }
+//         datapageName.setLogFile(name, types);
+//     }
+    
+// }
 
 
 int main(){
 
     // Reading input user
-    std::string input;
-    readInput(&input);
-    std::cout << "Your input: " << input << std::endl;
+    std::string tabInput;
+    readInitialInput(&tabInput);
+    std::cout << "Your input: " << tabInput << std::endl;
 
 
-    datapage temp(input);
+    datapage temp(tabInput);
     temp.createRoot();
     temp.createIntermediate();
     temp.createDataPage();
-    temp.createDataPage();
-    temp.createIntermediate();
+    // temp.createDataPage();
+    // temp.createIntermediate();
     return 0;
 }

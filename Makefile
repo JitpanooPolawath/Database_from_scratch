@@ -16,4 +16,4 @@ datapage.o: includes/datapage.cpp includes/datapage.h
 
 clean:
 	@echo "Removing .o files"
-	rm -f *.o *.mdf  query
+	rm -f *.o *.mdf *.ldf query

@@ -1,5 +1,19 @@
 #include "datapage.h"
 
+void createLogFile(std::string fileName){
+    std::fstream tempLogFile;
+    tempLogFile.open(fileName,  std::ios::out | std::ios::binary );
+    if (!tempLogFile.is_open()) {
+        std::cout << "Error: file did not open correctly" << std::endl;
+        exit(0);
+    }
+    // just a file with number of rows
+    uint8_t tempRow = 1;
+    tempLogFile.write(reinterpret_cast<char*>(&tempRow),sizeof(tempRow));
+    tempLogFile.close();
+}
+
+
 datapage::datapage(std::string tableName) {
     numRow = 0;
     bytesLeft = 8096;
@@ -50,6 +64,7 @@ void datapage::createRoot() {
     datapageFile.write(reinterpret_cast<char*>(&pageHeaderBytes), sizeof(pageHeaderBytes));
     datapageFile.write(reinterpret_cast<char*>(&dataRows), sizeof(dataRows));
     datapageFile.close();
+    createLogFile(logFileName);
 }
         
 void datapage::createIntermediate(){
@@ -131,13 +146,10 @@ void datapage::createDataPage(){
 
 // Log table file (number of rows, columns name, columns type, log(timestamp, PST)) 
 // Log file is continous (continue append data for log)
-void datapage::createLogFile(){
-    logFile.open(logFileName, std::ios::in | std::ios::binary | std::ios::out);
+void datapage::setLogFile(std::string name, columnType types){
+    logFile.open(logFileName, std::ios::binary | std::ios::out | std::ios::app);
     if (!logFile.is_open()) {
         std::cout << "Error: file did not open correctly" << std::endl;
         exit(0);
     }
-    uint16_t numberOfRow = 0;
-    
-
 }
