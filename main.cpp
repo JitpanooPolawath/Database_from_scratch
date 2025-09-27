@@ -12,21 +12,27 @@ void readInitialInput(std::string* input ){
 }
 
 // Read user inputs, then while loop getting user inputs 
-// void readInputColumn(datapage datapageName){
-//     // example case
-//     for(int i = 0; i < 4; i++ ){
-//         std::string name = "test" + i;
-//         columnType types;
-//         if(i % 2 == 0){
-//             types.isChar = true;
-//             types.charLength = 20;
-//         }else{
-//             types.isChar = false;
-//         }
-//         datapageName.setLogFile(name, types);
-//     }
+void readInputColumn(datapage* datapageName){
+    // example case
+    datapageName->openLog();
+    for(int i = 0; i <= 4; i++ ){
+        char* name = new char[30];
+        std::strcpy(name, "Hello");
+        columnType types;
+        if(i % 2 == 0){
+            types.isChar = true;
+            types.charLength = 20;
+        }else{
+            types.isChar = false;
+            types.charLength = 0;
+        }
+        std::cout<<name<< std::endl;
+        datapageName->setLogFile(name, types);
+        delete[] name;
+    }
+    datapageName->closeLog();
     
-// }
+}
 
 
 int main(){
@@ -39,8 +45,9 @@ int main(){
 
     datapage temp(tabInput);
     temp.createRoot();
-    temp.createIntermediate();
-    temp.createDataPage();
+    readInputColumn(&temp);
+    // temp.createIntermediate();
+    // temp.createDataPage();
     // temp.createDataPage();
     // temp.createIntermediate();
     return 0;

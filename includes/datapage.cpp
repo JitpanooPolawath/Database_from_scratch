@@ -8,7 +8,7 @@ void createLogFile(std::string fileName){
         exit(0);
     }
     // just a file with number of rows
-    uint8_t tempRow = 1;
+    uint8_t tempRow = 0;
     tempLogFile.write(reinterpret_cast<char*>(&tempRow),sizeof(tempRow));
     tempLogFile.close();
 }
@@ -144,12 +144,33 @@ void datapage::createDataPage(){
 
 }
 
-// Log table file (number of rows, columns name, columns type, log(timestamp, PST)) 
-// Log file is continous (continue append data for log)
-void datapage::setLogFile(std::string name, columnType types){
+void datapage::openLog(){
+    if (logFile.is_open()) {
+        return;
+    }
     logFile.open(logFileName, std::ios::binary | std::ios::out | std::ios::app);
     if (!logFile.is_open()) {
-        std::cout << "Error: file did not open correctly" << std::endl;
-        exit(0);
+        std::cout << "Error: Log file did not open correctly" << std::endl;
+        exit(0); // Use a non-zero exit code for errors
     }
 }
+
+void datapage::closeLog(){
+    if (logFile.is_open()) {
+        logFile.close();
+    }
+}
+
+
+// Log table file (number of rows, columns name, columns type, log(timestamp, PST)) 
+// Log file is continous (continue append data for log)
+void datapage::setLogFile(char* name, columnType types){
+    logFile.write(name,std::strlen(name));
+    if (types.isChar){
+        logFile.write(reinterpret_cast<char*>(&types.isChar),sizeof(bool));
+        logFile.write(reinterpret_cast<char*>(&types.charLength),sizeof(uint8_t));
+    }else{
+        logFile.write(reinterpret_cast<char*>(&types.isChar),sizeof(bool));
+        logFile.write(reinterpret_cast<char*>(&types.isChar),sizeof(uint8_t));
+    }
+} 

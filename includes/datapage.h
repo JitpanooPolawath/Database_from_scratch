@@ -4,13 +4,14 @@
 #include <iostream>
 #include <fstream>
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <list>
 
 struct columnType{
     bool isChar;
     // Length of char
-    int charLength;
+    uint8_t charLength;
 };
 
 struct returnHeader {int parentRow; int parentBytes;};
@@ -39,7 +40,9 @@ public:
     void createRoot();
     void createIntermediate();
     void createDataPage();
-    void setLogFile(std::string name, columnType types);
+    void openLog();
+    void closeLog();
+    void setLogFile(char* name, columnType types);
 };
 
 #endif
