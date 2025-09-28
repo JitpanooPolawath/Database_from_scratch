@@ -7,6 +7,8 @@
 #include <cstring>
 #include <string>
 #include <list>
+#include <chrono>
+#include <typeinfo>
 
 struct columnType{
     bool isChar;
@@ -40,9 +42,13 @@ public:
     void createRoot();
     void createIntermediate();
     void createDataPage();
+    
+    // Create & update log
     void openLog();
     void closeLog();
+    void setLogColumnCount(uint8_t count);
     void setLogFile(char* name, columnType types);
+    void setLogTimestamp(uint8_t isValue);
 };
 
 #endif

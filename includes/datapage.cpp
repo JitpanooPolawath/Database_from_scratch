@@ -193,3 +193,17 @@ void datapage::setLogColumnCount(uint8_t count){
     logFile.write(reinterpret_cast<char*>(&count),sizeof(uint8_t));
     logFile.close();
 }
+
+// Set lop timestamp
+void datapage::setLogTimestamp(uint8_t isValue){
+    openLog();
+
+    // isValue: 0 = insert action, 1 = update action, 2 = delete action
+    logFile.write(reinterpret_cast<char*>(&isValue),sizeof(uint8_t));
+    // Timestamp
+    auto current_time = std::chrono::system_clock::now();
+    auto duration = current_time.time_since_epoch();
+    uint32_t epoch_time = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+    logFile.write(reinterpret_cast<char*>(&epoch_time),sizeof(uint32_t));
+    closeLog();
+}

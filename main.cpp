@@ -14,6 +14,7 @@ void readInitialInput(std::string* input ){
 // Read user inputs, then while loop getting user inputs 
 void readInputColumn(datapage* datapageName){
     // example case
+    uint8_t columnCount = 0;
     datapageName->openLog();
     for(int i = 0; i <= 4; i++ ){
         char* name = new char[30];
@@ -29,9 +30,10 @@ void readInputColumn(datapage* datapageName){
         std::cout<<name<< std::endl;
         datapageName->setLogFile(name, types);
         delete[] name;
+        columnCount++;
     }
     datapageName->closeLog();
-    
+    datapageName->setLogColumnCount(columnCount);
 }
 
 
@@ -45,10 +47,13 @@ int main(){
 
     datapage temp(tabInput);
     temp.createRoot();
-    // readInputColumn(&temp);
+    readInputColumn(&temp);
+    temp.setLogTimestamp(0);
+    temp.setLogTimestamp(1);
+    temp.setLogTimestamp(2);
     temp.createIntermediate();
     temp.createDataPage();
     // temp.createDataPage();
-    temp.createIntermediate();
+    // temp.createIntermediate();
     return 0;
 }
