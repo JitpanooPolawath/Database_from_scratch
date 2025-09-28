@@ -9,7 +9,9 @@ void createLogFile(std::string fileName){
     }
     // just a file with number of rows
     uint8_t tempRow = 0;
+    uint8_t columnCount = 0;
     tempLogFile.write(reinterpret_cast<char*>(&tempRow),sizeof(tempRow));
+    tempLogFile.write(reinterpret_cast<char*>(&columnCount),sizeof(columnCount));
     tempLogFile.close();
 }
 
@@ -179,3 +181,15 @@ void datapage::setLogFile(char* name, columnType types){
         logFile.write(reinterpret_cast<char*>(&types.isChar),sizeof(uint8_t));
     }
 } 
+
+// Update the number of column in the table
+void datapage::setLogColumnCount(uint8_t count){
+    logFile.open(logFileName, std::ios::binary | std::ios::out |std::ios::in);
+    if (!logFile.is_open()) {
+        std::cout << "Error: Log file did not open correctly" << std::endl;
+        exit(0); // Use a non-zero exit code for errors
+    }
+    logFile.seekp(1,std::fstream::beg);
+    logFile.write(reinterpret_cast<char*>(&count),sizeof(uint8_t));
+    logFile.close();
+}
