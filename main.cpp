@@ -45,10 +45,10 @@ int main(){
 
     datapage temp(tabInput);
     temp.createRoot();
-    readInputColumn(&temp);
-    // temp.createIntermediate();
+    // readInputColumn(&temp);
+    temp.createIntermediate();
+    temp.createDataPage();
     // temp.createDataPage();
-    // temp.createDataPage();
-    // temp.createIntermediate();
+    temp.createIntermediate();
     return 0;
 }

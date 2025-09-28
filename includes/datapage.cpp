@@ -83,7 +83,12 @@ void datapage::createIntermediate(){
     // Input intermediate address to root page
     datapageFile.seekp(96,std::fstream::cur);
     datapageFile.seekp(4*(numRow - 1),std::fstream::cur);
-    uint32_t address = (numRow) * 8192;
+    uint32_t address;
+    if (header.parentRow != 0){
+        address = (header.parentRow) *8192*7;
+    }else{
+        address = numRow * 8192;
+    }
     datapageFile.write(reinterpret_cast<char*>(&address),sizeof(address));
     datapageFile.close();
     
