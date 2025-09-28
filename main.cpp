@@ -53,7 +53,11 @@ int main(){
     temp.setLogTimestamp(2);
     temp.createIntermediate();
     temp.createDataPage();
-    // temp.createDataPage();
-    // temp.createIntermediate();
+    temp.createDataPage();
+    temp.createDataPage();
+    temp.createDataPage();
+    temp.createDataPage();
+    temp.createIntermediate();
+    temp.createDataPage();
     return 0;
 }

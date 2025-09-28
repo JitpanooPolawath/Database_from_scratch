@@ -1,5 +1,6 @@
 #include "datapage.h"
 
+
 void createLogFile(std::string fileName){
     std::fstream tempLogFile;
     tempLogFile.open(fileName,  std::ios::out | std::ios::binary );
@@ -17,6 +18,7 @@ void createLogFile(std::string fileName){
 
 
 datapage::datapage(std::string tableName) {
+    // Num row is the number of row the root page current have
     numRow = 0;
     bytesLeft = 8096;
     isFull = 0;
@@ -24,12 +26,10 @@ datapage::datapage(std::string tableName) {
     logFileName = tableName + "_log" + ".ldf";
 }
 
-// Method IMPLEMENTATION
 
 returnHeader datapage::getHeader(int startingAddress, std::string parentName){
-    // Create entries in root
-    // Get current root
-    std::cout << "Name: " << parentName << std::endl;
+    // Get parent header from address
+    std::cout << "Header name: " << parentName << std::endl;
     uint8_t Row;
     datapageFile.seekg(startingAddress,std::fstream::beg);
     datapageFile.read(reinterpret_cast<char*>(&Row), 1);
@@ -38,7 +38,11 @@ returnHeader datapage::getHeader(int startingAddress, std::string parentName){
     uint16_t Bytes;
     datapageFile.read(reinterpret_cast<char*>(&Bytes), 2);
     std::cout << "Bytes left: " <<static_cast<int>(Bytes) << std::endl;
-    return {Row,Bytes};
+    // Get address
+    uint32_t address;
+    datapageFile.read(reinterpret_cast<char*>(&address), sizeof(address));
+    uint32_t bigEAddr= swapEndian32(address);
+    return {Row,Bytes,bigEAddr};
 }
 
 void datapage::updateHeader(int startingAddress, int parentRow, int parentBytes ){
@@ -60,9 +64,11 @@ void datapage::createRoot() {
         exit(0);
     }
     
+    uint32_t emptyAddress=0;
     datapageFile.write(reinterpret_cast<char*>(&numRow), sizeof(numRow));
     datapageFile.write(reinterpret_cast<char*>(&bytesLeft), sizeof(bytesLeft));
     datapageFile.write(reinterpret_cast<char*>(&isFull), sizeof(isFull));
+    datapageFile.write(reinterpret_cast<char*>(&emptyAddress),sizeof(emptyAddress));
     datapageFile.write(reinterpret_cast<char*>(&pageHeaderBytes), sizeof(pageHeaderBytes));
     datapageFile.write(reinterpret_cast<char*>(&dataRows), sizeof(dataRows));
     datapageFile.close();
@@ -81,6 +87,7 @@ void datapage::createIntermediate(){
 
     numRow = header.parentRow + 1;
     bytesLeft = header.parentBytes;
+    std::cout << "Address: "<< 0 << std::endl;
 
     // Input intermediate address to root page
     datapageFile.seekp(96,std::fstream::cur);
@@ -100,7 +107,7 @@ void datapage::createIntermediate(){
         std::cout << "Error: file did not open correctly" << std::endl;
         exit(0);
     }
-    datapageFile.seekp(8192,std::fstream::beg);
+    // datapageFile.seekp(8192,std::fstream::beg);
     // Create intermediate page and 
     uint8_t tempFull = 0;
     uint8_t emptyRow = 0;
@@ -108,6 +115,7 @@ void datapage::createIntermediate(){
     datapageFile.write(reinterpret_cast<char*>(&emptyRow),sizeof(emptyRow));
     datapageFile.write(reinterpret_cast<char*>(&startingBytes),sizeof(startingBytes));
     datapageFile.write(reinterpret_cast<char*>(&tempFull),sizeof(tempFull));
+    datapageFile.write(reinterpret_cast<char*>(&address),sizeof(address));
     datapageFile.write(reinterpret_cast<char*>(&pageHeaderBytes),sizeof(pageHeaderBytes));
     datapageFile.write(reinterpret_cast<char*>(&dataRows),sizeof(dataRows));
     datapageFile.close();
@@ -120,13 +128,17 @@ void datapage::createDataPage(){
         std::cout << "Error: file did not open correctly" << std::endl;
         exit(0);
     }
-    returnHeader header = getHeader(8192*numRow, "intermediate");
-    updateHeader(8192*numRow, header.parentRow,header.parentBytes);
-
+    int getParentRow = 8192 * numRow;
+    if(numRow > 1){
+        getParentRow = 8192 * 7 * (numRow-1);
+    }
+    returnHeader header = getHeader(getParentRow, "intermediate");
+    updateHeader(getParentRow, header.parentRow,header.parentBytes);
+    std::cout << "Address: "<< header.parentAddress << std::endl;
     // Input DataPage address to Intermediate page
     datapageFile.seekp(96,std::fstream::cur);
     datapageFile.seekp(4*(header.parentRow),std::fstream::cur);
-    uint32_t address = (header.parentRow+1) * 8192;
+    uint32_t address = header.parentAddress + 8192 * (header.parentRow+1);
     datapageFile.write(reinterpret_cast<char*>(&address),sizeof(address));
     datapageFile.close();
 
@@ -142,9 +154,11 @@ void datapage::createDataPage(){
     uint8_t tempFull = 1;
     uint8_t emptyRow = 0;
     uint16_t startingBytes = 8096;
+    uint32_t emptyAddress = 0;
     datapageFile.write(reinterpret_cast<char*>(&emptyRow), sizeof(emptyRow));
     datapageFile.write(reinterpret_cast<char*>(&startingBytes), sizeof(startingBytes));
     datapageFile.write(reinterpret_cast<char*>(&tempFull), sizeof(tempFull));
+    datapageFile.write(reinterpret_cast<char*>(&emptyAddress),sizeof(emptyAddress));
     datapageFile.write(reinterpret_cast<char*>(&pageHeaderBytes), sizeof(pageHeaderBytes));
     datapageFile.write(reinterpret_cast<char*>(&dataRows), sizeof(dataRows));
     datapageFile.close();

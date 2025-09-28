@@ -10,13 +10,18 @@
 #include <chrono>
 #include <typeinfo>
 
+#include "component.h"
+
+#define EMPTYHEADER 88
+
+
 struct columnType{
     bool isChar;
     // Length of char
     uint8_t charLength;
 };
 
-struct returnHeader {int parentRow; int parentBytes;};
+struct returnHeader {int parentRow; int parentBytes; uint32_t parentAddress;};
 
 class datapage {
 private:
@@ -25,7 +30,7 @@ private:
     uint16_t bytesLeft;   // (2 bytes)
     unsigned char isFull; // (1 byte)
     // 92 bytes left
-    char pageHeaderBytes[92] = {0};
+    char pageHeaderBytes[EMPTYHEADER] = {0};
 
     // data rows
     char dataRows[8096] = {0};
