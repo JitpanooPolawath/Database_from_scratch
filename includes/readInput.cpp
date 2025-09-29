@@ -56,7 +56,7 @@ numFile readInitialInput(){
 void readInputColumn(datapage* datapageName){
     // example case
     uint8_t columnCount = 0;
-    datapageName->openLog();
+    datapageName->openLog(false);
     for(int i = 0; i <= 4; i++ ){
         char* name = new char[30];
         std::strcpy(name, "Hello");
@@ -73,6 +73,6 @@ void readInputColumn(datapage* datapageName){
         delete[] name;
         columnCount++;
     }
-    datapageName->closeLog();
+    datapageName->closeLog(false);
     datapageName->setLogColumnCount(columnCount);
 }

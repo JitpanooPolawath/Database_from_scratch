@@ -39,6 +39,8 @@ private:
     std::string logFileName;
     std::fstream datapageFile;
     std::fstream logFile;
+    std::string logTimeName;
+    std::fstream logTimeFile;
 
 public:
     datapage(std::string tableName);
@@ -49,8 +51,8 @@ public:
     void createDataPage();
     
     // Create & update log
-    void openLog();
-    void closeLog();
+    void openLog(bool isLogTime);
+    void closeLog(bool isLogTime);
     void setLogColumnCount(uint8_t count);
     void setLogFile(char* name, columnType types);
     void setLogTimestamp(uint8_t isValue);

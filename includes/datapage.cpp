@@ -1,7 +1,7 @@
 #include "datapage.h"
 
 
-void createLogFile(std::string fileName){
+void createLogFile(std::string fileName, bool isTime){
     std::fstream tempLogFile;
     tempLogFile.open(fileName,  std::ios::out | std::ios::binary );
     if (!tempLogFile.is_open()) {
@@ -9,11 +9,16 @@ void createLogFile(std::string fileName){
         exit(0);
     }
     // just a file with number of rows
-    uint8_t tempRow = 0;
-    uint8_t columnCount = 0;
-    tempLogFile.write(reinterpret_cast<char*>(&tempRow),sizeof(tempRow));
-    tempLogFile.write(reinterpret_cast<char*>(&columnCount),sizeof(columnCount));
-    tempLogFile.close();
+    if(isTime){
+
+    }else{
+        uint8_t tempRow = 0;
+        uint8_t columnCount = 0;
+        tempLogFile.write(reinterpret_cast<char*>(&tempRow),sizeof(tempRow));
+        tempLogFile.write(reinterpret_cast<char*>(&columnCount),sizeof(columnCount));
+        tempLogFile.close();
+    }
+
 }
 
 
@@ -23,7 +28,8 @@ datapage::datapage(std::string tableName) {
     bytesLeft = 8096;
     isFull = 0;
     fileName = tableName + ".mdf";
-    logFileName = tableName + "_log" + ".ldf";
+    logFileName = tableName + "_config" + ".ldf";
+    logTimeName = tableName + "_log" + ".ldf";
 }
 
 
@@ -72,7 +78,8 @@ void datapage::createRoot() {
     datapageFile.write(reinterpret_cast<char*>(&pageHeaderBytes), sizeof(pageHeaderBytes));
     datapageFile.write(reinterpret_cast<char*>(&dataRows), sizeof(dataRows));
     datapageFile.close();
-    createLogFile(logFileName);
+    createLogFile(logFileName, false);
+    createLogFile(logTimeName, true);
 }
         
 void datapage::createIntermediate(){
@@ -165,21 +172,40 @@ void datapage::createDataPage(){
 
 }
 
-void datapage::openLog(){
-    if (logFile.is_open()) {
+void datapage::openLog(bool isLogTime){
+    if (isLogTime){
+        if (logTimeFile.is_open()) {
         return;
+        }
+        logTimeFile.open(logTimeName, std::ios::binary | std::ios::out | std::ios::app);
+        if (!logTimeFile.is_open()) {
+            std::cout << "Error: Log file did not open correctly" << std::endl;
+            exit(0); // Use a non-zero exit code for errors
+        } 
+    }else{
+        if (logFile.is_open()) {
+        return;
+        }
+        logFile.open(logFileName, std::ios::binary | std::ios::out | std::ios::app);
+        if (!logFile.is_open()) {
+            std::cout << "Error: Log file did not open correctly" << std::endl;
+            exit(0); // Use a non-zero exit code for errors
+        } 
     }
-    logFile.open(logFileName, std::ios::binary | std::ios::out | std::ios::app);
-    if (!logFile.is_open()) {
-        std::cout << "Error: Log file did not open correctly" << std::endl;
-        exit(0); // Use a non-zero exit code for errors
-    }
+    
 }
 
-void datapage::closeLog(){
-    if (logFile.is_open()) {
-        logFile.close();
+void datapage::closeLog(bool isLogTime){
+    if(isLogTime){
+        if (logTimeFile.is_open()) {
+            logTimeFile.close();
+        }
+    }else{
+        if (logFile.is_open()) {
+            logFile.close();
+        }
     }
+    
 }
 
 
@@ -210,14 +236,14 @@ void datapage::setLogColumnCount(uint8_t count){
 
 // Set lop timestamp
 void datapage::setLogTimestamp(uint8_t isValue){
-    openLog();
+    openLog(true);
 
     // isValue: 0 = insert action, 1 = update action, 2 = delete action
-    logFile.write(reinterpret_cast<char*>(&isValue),sizeof(uint8_t));
+    logTimeFile.write(reinterpret_cast<char*>(&isValue),sizeof(uint8_t));
     // Timestamp
     auto current_time = std::chrono::system_clock::now();
     auto duration = current_time.time_since_epoch();
     uint32_t epoch_time = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
-    logFile.write(reinterpret_cast<char*>(&epoch_time),sizeof(uint32_t));
-    closeLog();
+    logTimeFile.write(reinterpret_cast<char*>(&epoch_time),sizeof(uint32_t));
+    closeLog(true);
 }

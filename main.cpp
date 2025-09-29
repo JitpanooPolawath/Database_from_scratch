@@ -17,12 +17,12 @@ int main(){
         temp.setLogTimestamp(0);
         temp.setLogTimestamp(1);
         temp.setLogTimestamp(2);
-        temp.createIntermediate();
-        temp.createDataPage();
-        temp.createDataPage();
-        temp.createDataPage();
-        temp.createDataPage();
-        temp.createDataPage();
+        // temp.createIntermediate();
+        // temp.createDataPage();
+        // temp.createDataPage();
+        // temp.createDataPage();
+        // temp.createDataPage();
+        // temp.createDataPage();
     }
     
     return 0;
