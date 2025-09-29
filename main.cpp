@@ -5,24 +5,29 @@
 #include "includes/readInput.h"
 
 
-int main(){
-
-    // Reading input user
-    numFile queryMode = readInitialInput();
-
-    if (queryMode.mode == 0){
-        datapage temp(queryMode.fileName);
-        temp.createRoot();
-        readInputColumn(&temp);
-        temp.setLogTimestamp(0);
-        temp.setLogTimestamp(1);
-        temp.setLogTimestamp(2);
+void createTable(datapage* filePage){
+        filePage->createRoot();
+        readInputColumn(filePage);
+        filePage->setLogTimestamp(0);
+        filePage->setLogTimestamp(1);
+        filePage->setLogTimestamp(2);
         // temp.createIntermediate();
         // temp.createDataPage();
         // temp.createDataPage();
         // temp.createDataPage();
         // temp.createDataPage();
         // temp.createDataPage();
+}
+
+
+int main(){
+
+    // Reading input user
+    numFile queryMode = readInitialInput();
+
+    if (queryMode.mode == 0){
+        datapage filePage(queryMode.fileName);
+        createTable(&filePage);
     }
     
     return 0;

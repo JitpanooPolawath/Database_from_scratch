@@ -3,6 +3,7 @@
 
 static void invalidAction(){
     std::cout << "Invalid option. Please try again" << std::endl;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
 enum queryType convertString(std::string str) {
@@ -57,21 +58,48 @@ void readInputColumn(datapage* datapageName){
     // example case
     uint8_t columnCount = 0;
     datapageName->openLog(false);
-    for(int i = 0; i <= 4; i++ ){
-        char* name = new char[30];
-        std::strcpy(name, "Hello");
-        columnType types;
-        if(i % 2 == 0){
-            types.isChar = true;
-            types.charLength = 20;
-        }else{
-            types.isChar = false;
-            types.charLength = 0;
+    while(1){
+        char name[30] = {0};
+        std::cout<< "\n" << "Enter column name (LIMIT 30 character): ";
+        std::cin >> name;
+        if (std::cin.fail()) {
+            invalidAction();
+            continue;
         }
-        std::cout<<name<< std::endl;
+        if(std::strlen(name) > 30){
+            invalidAction();
+            continue;
+        }
+        columnType types;
+        char* typeIn = new char[4];
+        std::cout << "Type char or int: ";
+        std::cin >> typeIn;
+        if(std::strlen(typeIn) == 4){
+            int temp_length = 0; // 1. Read into a standard int
+            std::cout << "Input char size (limit 100): ";
+            std::cin >> temp_length;
+            if(temp_length >= 100 || temp_length <= 0){
+                invalidAction();
+                continue;
+            }
+            types.charLength = temp_length;
+            types.isChar = true;
+        }else if(std::strlen(typeIn) == 3){
+            types.charLength = 0;
+            types.isChar = false;
+        }else{
+            invalidAction();
+            continue;
+        }
+        std::string stopIN;
+        std::cout << "Type [y] to add more column OR [n] to complete: ";
+        std::cin >> stopIN;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         datapageName->setLogFile(name, types);
-        delete[] name;
         columnCount++;
+        if(stopIN.compare("n") == 0){
+            break;
+        }
     }
     datapageName->closeLog(false);
     datapageName->setLogColumnCount(columnCount);

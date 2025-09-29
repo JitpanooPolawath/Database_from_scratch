@@ -8,12 +8,13 @@
 #include <string>
 #include <list>
 #include <chrono>
+#include <limits>
 #include <typeinfo>
 
 #include "component.h"
 
 #define EMPTYHEADER 88
-
+#define columnSize 30
 
 struct columnType{
     bool isChar;

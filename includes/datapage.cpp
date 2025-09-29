@@ -212,7 +212,7 @@ void datapage::closeLog(bool isLogTime){
 // Log table file (number of rows, columns name, columns type, log(timestamp, PST)) 
 // Log file is continous (continue append data for log)
 void datapage::setLogFile(char* name, columnType types){
-    logFile.write(name,std::strlen(name));
+    logFile.write(name,columnSize);
     if (types.isChar){
         logFile.write(reinterpret_cast<char*>(&types.isChar),sizeof(bool));
         logFile.write(reinterpret_cast<char*>(&types.charLength),sizeof(uint8_t));

@@ -26,3 +26,7 @@ clean:
 cleano:
 	@echo "Removing .o files"
 	rm -f *.o 
+
+cleani:
+	@echo "Removing .mdf .ldf files"
+	rm -f *.mdf *.ldf query
