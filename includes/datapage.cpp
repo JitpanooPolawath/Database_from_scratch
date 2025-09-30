@@ -49,10 +49,12 @@ returnHeader datapage::getHeader(int startingAddress, std::string parentName){
     datapageFile.read(reinterpret_cast<char*>(&Bytes), 2);
     std::cout << "Bytes left: " <<static_cast<int>(Bytes) << std::endl;
     // Get address
+    bool isFull;
+    datapageFile.read(reinterpret_cast<char*>(&isFull), 1);
+    std::cout << "Is full: " <<static_cast<int>(isFull) << std::endl;
     uint32_t address;
     datapageFile.read(reinterpret_cast<char*>(&address), sizeof(address));
-    uint32_t bigEAddr= swapEndian32(address);
-    return {Row,Bytes,bigEAddr};
+    return {Row,Bytes,address};
 }
 
 void datapage::updateHeader(int startingAddress, int parentRow, int parentBytes ){
@@ -172,6 +174,7 @@ void datapage::createDataPage(){
     uint8_t tempFull = 1;
     uint8_t emptyRow = 0;
     uint16_t startingBytes = 8096;
+    address = 4279365137;
     uint32_t minimumNumber = UINT32_MAX;
     datapageFile.write(reinterpret_cast<char*>(&emptyRow), sizeof(emptyRow));
     datapageFile.write(reinterpret_cast<char*>(&startingBytes), sizeof(startingBytes));

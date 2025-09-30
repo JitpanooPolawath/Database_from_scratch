@@ -7,16 +7,26 @@
 
 void createTable(datapage* filePage){
         filePage->createRoot();
-        readInputColumn(filePage);
-        filePage->setLogTimestamp(0);
-        filePage->setLogTimestamp(1);
-        filePage->setLogTimestamp(2);
+        if(false){
+            readInputColumn(filePage);
+            filePage->setLogTimestamp(0);
+            filePage->setLogTimestamp(1);
+            filePage->setLogTimestamp(2);
+        }
         filePage->createIntermediate();
         filePage->createDataPage();
         filePage->createDataPage();
         filePage->createDataPage();
         filePage->createDataPage();
         filePage->createDataPage();
+        filePage->createDataPage();
+        filePage->createDataPage();
+        filePage->createDataPage();
+        filePage->createDataPage();
+        filePage->createDataPage();
+        filePage->createIntermediate();
+        filePage->createDataPage();
+
 }
 
 
