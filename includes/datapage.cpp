@@ -100,10 +100,12 @@ void datapage::createIntermediate(){
 
     // Input intermediate address to root page
     datapageFile.seekp(96,std::fstream::cur);
+    // TODO: Update to sizeof(uint16_t) + (4 * (numRow - 1))
     datapageFile.seekp(4*(numRow - 1),std::fstream::cur);
     uint32_t address;
     if (header.parentRow != 0){
-        address = (header.parentRow) *8192*7;
+         // TODO: CHANGE  * 8192 * 7 -> 8192 + (header.parentRow * INDAOFFSET /* (6/11) */ * 8192)  
+        address =  8192 + (header.parentRow * INDAOFFSET /* (6/11) */ * 8192)
     }else{
         address = numRow * 8192;
     }
@@ -139,7 +141,8 @@ void datapage::createDataPage(){
     }
     int getParentRow = 8192 * numRow;
     if(numRow > 1){
-        getParentRow = 8192 * 7 * (numRow-1);
+        // TODO: CHANGED 8192 * 7 * (numRow-1) -> 8192 + ((numRow-1) * INDAOFFSET * 8192)
+        getParentRow = 8192 + ((numRow-1) * INDAOFFSET * 8192);
     }
     returnHeader header = getHeader(getParentRow, "intermediate");
     updateHeader(getParentRow, header.parentRow,header.parentBytes);

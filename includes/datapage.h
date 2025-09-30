@@ -15,6 +15,7 @@
 
 #define EMPTYHEADER 88
 #define columnSize 30
+#define INDAOFFSET 11
 
 struct columnType{
     bool isChar;
