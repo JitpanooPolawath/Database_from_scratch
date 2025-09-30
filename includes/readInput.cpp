@@ -58,6 +58,7 @@ void readInputColumn(datapage* datapageName){
     // example case
     uint8_t columnCount = 0;
     datapageName->openLog(false);
+    uint16_t totalBytes = 0;
     while(1){
         char name[30] = {0};
         std::cout<< "\n" << "Enter column name (LIMIT 30 character): ";
@@ -82,11 +83,13 @@ void readInputColumn(datapage* datapageName){
                 invalidAction();
                 continue;
             }
+            totalBytes += temp_length;
             types.charLength = temp_length;
             types.isChar = true;
         }else if(std::strlen(typeIn) == 3){
             types.charLength = 0;
             types.isChar = false;
+            totalBytes += 4;
         }else{
             invalidAction();
             continue;
@@ -102,5 +105,5 @@ void readInputColumn(datapage* datapageName){
         }
     }
     datapageName->closeLog(false);
-    datapageName->setLogColumnCount(columnCount);
+    datapageName->setLogColumnCount(columnCount, totalBytes);
 }
