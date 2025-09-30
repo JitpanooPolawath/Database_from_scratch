@@ -105,7 +105,7 @@ void datapage::createIntermediate(){
     uint32_t address;
     if (header.parentRow != 0){
          // TODO: CHANGE  * 8192 * 7 -> 8192 + (header.parentRow * INDAOFFSET /* (6/11) */ * 8192)  
-        address =  8192 + (header.parentRow * INDAOFFSET /* (6/11) */ * 8192)
+        address =  8192 + (header.parentRow * INDAOFFSET /* (6/11) */ * 8192);
     }else{
         address = numRow * 8192;
     }
@@ -222,8 +222,9 @@ void datapage::setLogFile(char* name, columnType types){
         logFile.write(reinterpret_cast<char*>(&types.isChar),sizeof(bool));
         logFile.write(reinterpret_cast<char*>(&types.charLength),sizeof(uint8_t));
     }else{
+        uint32_t temp = 0;
         logFile.write(reinterpret_cast<char*>(&types.isChar),sizeof(bool));
-        logFile.write(reinterpret_cast<char*>(&types.isChar),sizeof(uint32_t));
+        logFile.write(reinterpret_cast<char*>(&temp),sizeof(uint32_t));
     }
 } 
 
