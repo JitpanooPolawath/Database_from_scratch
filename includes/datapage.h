@@ -55,7 +55,7 @@ public:
     // Create & update log
     void openLog(bool isLogTime);
     void closeLog(bool isLogTime);
-    void setLogColumnCount(uint8_t count, uint16_t totalBytes);
+    void setLogColumnCount(uint8_t count, uint16_t totalBytes, uint8_t colKey);
     void setLogFile(char* name, columnType types);
     void setLogTimestamp(uint8_t isValue);
 };

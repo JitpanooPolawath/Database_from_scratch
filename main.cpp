@@ -11,12 +11,12 @@ void createTable(datapage* filePage){
         filePage->setLogTimestamp(0);
         filePage->setLogTimestamp(1);
         filePage->setLogTimestamp(2);
-        // temp.createIntermediate();
-        // temp.createDataPage();
-        // temp.createDataPage();
-        // temp.createDataPage();
-        // temp.createDataPage();
-        // temp.createDataPage();
+        filePage->createIntermediate();
+        filePage->createDataPage();
+        filePage->createDataPage();
+        filePage->createDataPage();
+        filePage->createDataPage();
+        filePage->createDataPage();
 }
 
 

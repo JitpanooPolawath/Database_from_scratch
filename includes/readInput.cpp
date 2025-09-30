@@ -59,6 +59,8 @@ void readInputColumn(datapage* datapageName){
     uint8_t columnCount = 0;
     datapageName->openLog(false);
     uint16_t totalBytes = 0;
+    uint8_t colKey = 0;
+    bool foundPKey = false;
     while(1){
         char name[30] = {0};
         std::cout<< "\n" << "Enter column name (LIMIT 30 character): ";
@@ -94,6 +96,19 @@ void readInputColumn(datapage* datapageName){
             invalidAction();
             continue;
         }
+        if(foundPKey == false){
+            std::string inKey;
+            std::cout << "Is this column a primary key?(Only one primary key) [y] or [n]: ";
+            std::cin >> inKey;
+            if(inKey.compare("y") == 0){
+                std::cout << "Is a primary key"<<std::endl;
+            colKey = columnCount;
+            foundPKey = true;
+            }else{
+                std::cout << "Not a primary key"<<std::endl;
+            }
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::string stopIN;
         std::cout << "Type [y] to add more column OR [n] to complete: ";
         std::cin >> stopIN;
@@ -105,5 +120,5 @@ void readInputColumn(datapage* datapageName){
         }
     }
     datapageName->closeLog(false);
-    datapageName->setLogColumnCount(columnCount, totalBytes);
+    datapageName->setLogColumnCount(columnCount, totalBytes, colKey);
 }
