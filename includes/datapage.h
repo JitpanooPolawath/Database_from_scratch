@@ -13,7 +13,7 @@
 
 #include "component.h"
 
-#define EMPTYHEADER 88
+#define EMPTYHEADER 84
 #define columnSize 30
 #define INDAOFFSET 11
 
