@@ -194,6 +194,9 @@ void datapage::createDataPage(){
         prevAddress =  8192 + header.parentAddress + (8192 * (currentID - 1)) ;
     }
     uint32_t nextAddress = 8192 + header.parentAddress + (8192 * (currentID + 1));
+    if(currentID == (INDAOFFSET - 2)){
+        nextAddress = 8192 + 8192 + header.parentAddress + (8192 * (currentID + 1));
+    }
     datapageFile.write(reinterpret_cast<char*>(&emptyRow), sizeof(emptyRow));
     datapageFile.write(reinterpret_cast<char*>(&startingBytes), sizeof(startingBytes));
     datapageFile.write(reinterpret_cast<char*>(&tempFull), sizeof(tempFull));
