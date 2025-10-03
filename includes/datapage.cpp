@@ -78,11 +78,13 @@ void datapage::createRoot() {
     
     uint32_t emptyAddress=0;
     uint32_t emptyNumber = 0;
+    uint8_t currentID = 0;
     datapageFile.write(reinterpret_cast<char*>(&numRow), sizeof(numRow));
     datapageFile.write(reinterpret_cast<char*>(&bytesLeft), sizeof(bytesLeft));
     datapageFile.write(reinterpret_cast<char*>(&isFull), sizeof(isFull));
     datapageFile.write(reinterpret_cast<char*>(&emptyAddress),sizeof(emptyAddress));
     datapageFile.write(reinterpret_cast<char*>(&emptyNumber),sizeof(emptyNumber));
+    datapageFile.write(reinterpret_cast<char*>(&currentID),sizeof(currentID));
     datapageFile.write(reinterpret_cast<char*>(&pageHeaderBytes), sizeof(pageHeaderBytes));
     datapageFile.write(reinterpret_cast<char*>(&dataRows), sizeof(dataRows));
     datapageFile.close();
@@ -130,11 +132,13 @@ void datapage::createIntermediate(){
     uint8_t emptyRow = 0;
     uint16_t startingBytes = 8096;
     uint32_t minimumNumber = UINT32_MAX;
+    uint8_t currentID = header.parentRow;
     datapageFile.write(reinterpret_cast<char*>(&emptyRow),sizeof(emptyRow));
     datapageFile.write(reinterpret_cast<char*>(&startingBytes),sizeof(startingBytes));
     datapageFile.write(reinterpret_cast<char*>(&tempFull),sizeof(tempFull));
     datapageFile.write(reinterpret_cast<char*>(&address),sizeof(address));
     datapageFile.write(reinterpret_cast<char*>(&minimumNumber),sizeof(minimumNumber));
+    datapageFile.write(reinterpret_cast<char*>(&currentID),sizeof(currentID));
     datapageFile.write(reinterpret_cast<char*>(&pageHeaderBytes),sizeof(pageHeaderBytes));
     datapageFile.write(reinterpret_cast<char*>(&dataRows),sizeof(dataRows));
     datapageFile.close();
@@ -174,13 +178,14 @@ void datapage::createDataPage(){
     uint8_t tempFull = 1;
     uint8_t emptyRow = 0;
     uint16_t startingBytes = 8096;
-    address = 4279365137;
     uint32_t minimumNumber = UINT32_MAX;
+    uint8_t currentID = header.parentRow;
     datapageFile.write(reinterpret_cast<char*>(&emptyRow), sizeof(emptyRow));
     datapageFile.write(reinterpret_cast<char*>(&startingBytes), sizeof(startingBytes));
     datapageFile.write(reinterpret_cast<char*>(&tempFull), sizeof(tempFull));
     datapageFile.write(reinterpret_cast<char*>(&address),sizeof(address));
     datapageFile.write(reinterpret_cast<char*>(&minimumNumber),sizeof(minimumNumber));
+    datapageFile.write(reinterpret_cast<char*>(&currentID),sizeof(currentID));
     datapageFile.write(reinterpret_cast<char*>(&pageHeaderBytes), sizeof(pageHeaderBytes));
     datapageFile.write(reinterpret_cast<char*>(&dataRows), sizeof(dataRows));
     datapageFile.close();

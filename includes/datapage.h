@@ -1,5 +1,4 @@
-#ifndef DATAPAGE_H
-#define DATAPAGE_H
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -13,7 +12,7 @@
 
 #include "component.h"
 
-#define EMPTYHEADER 84
+#define EMPTYHEADER 83
 #define columnSize 30
 #define INDAOFFSET 11
 
@@ -59,5 +58,3 @@ public:
     void setLogFile(char* name, columnType types);
     void setLogTimestamp(uint8_t isValue);
 };
-
-#endif
