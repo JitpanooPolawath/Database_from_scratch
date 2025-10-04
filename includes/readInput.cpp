@@ -125,7 +125,7 @@ void readInputColumn(datapage* datapageName){
 }
 
 
-void readInsertion(std::string inputFileName){
+std::vector<unsigned char> readInsertion(std::string inputFileName){
     std::fstream logFile;
     std::string logFileName = inputFileName + "_config" + ".ldf";
     logFile.open(logFileName, std::ios::in | std::ios::binary);
@@ -222,4 +222,5 @@ void readInsertion(std::string inputFileName){
     std::cout << "----- Inputted data -----" << std::endl;
     std::cout << fullOutput << std::endl;
     logFile.close();
+    return storedBytes;
 }

@@ -12,4 +12,4 @@ numFile readInitialInput();
 
 void readInputColumn(datapage* datapageName);
 
-void readInsertion(std::string fileName);
+std::vector<unsigned char> readInsertion(std::string fileName);
