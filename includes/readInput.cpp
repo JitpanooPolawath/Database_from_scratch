@@ -3,6 +3,7 @@
 
 static void invalidAction(){
     std::cout << "Invalid option. Please try again" << std::endl;
+    std::cin.clear(); 
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
@@ -20,20 +21,20 @@ enum queryType convertString(std::string str) {
 numFile readInitialInput(){
     std::string input;
     while(1){
-        std::cout << "Type mode or type --help for more information: ";
+        std::cout << "Type [mode] or type [--help] for more information: ";
         std::cin >> input;
         std::cout << "Your input: " << input << std::endl;
         if(input.compare("--help") == 0){
             std::cout <<"In help section - work in progress"<<std::endl;
         }else if(input.compare("mode") == 0){
-            std::cout << "Pick a mode: CREATE, INSERT, UPDATE, DEL, SELECT" << std::endl;
+            std::cout << "Pick a mode: CREATE, INSERT, UPDATE, DEL, SELECT: ";
             std::cin >> input;
             queryType queryMode = convertString(input);
+            std::cout << "Table name: ";
+            std::cin >> input;
             switch (queryMode)
             {
             case CREATE :
-                std::cout << "Name your table: ";
-                std::cin >> input;
                 return {0, input};
             case INSERT :
                 return {1, input};
@@ -102,8 +103,8 @@ void readInputColumn(datapage* datapageName){
             std::cin >> inKey;
             if(inKey.compare("y") == 0){
                 std::cout << "Is a primary key"<<std::endl;
-            colKey = columnCount;
-            foundPKey = true;
+                colKey = columnCount;
+                foundPKey = true;
             }else{
                 std::cout << "Not a primary key"<<std::endl;
             }
@@ -121,4 +122,104 @@ void readInputColumn(datapage* datapageName){
     }
     datapageName->closeLog(false);
     datapageName->setLogColumnCount(columnCount, totalBytes, colKey);
+}
+
+
+void readInsertion(std::string inputFileName){
+    std::fstream logFile;
+    std::string logFileName = inputFileName + "_config" + ".ldf";
+    logFile.open(logFileName, std::ios::in | std::ios::binary);
+    if(!logFile.is_open()){
+        std::cout << "File open error at insertion" << std::endl;
+        exit(1);
+    }
+    // GET numOfRow, columnCount, totalBytes, columnKey
+    
+    uint32_t numOfRow;
+    logFile.read(reinterpret_cast<char*>(&numOfRow),sizeof(numOfRow));
+    uint8_t columnCount;
+    logFile.read(reinterpret_cast<char*>(&columnCount),sizeof(columnCount));
+    uint16_t totalBytes;
+    logFile.read(reinterpret_cast<char*>(&totalBytes),sizeof(totalBytes));
+    uint8_t colKey;
+    logFile.read(reinterpret_cast<char*>(&colKey),sizeof(colKey));
+
+    std::cout <<"\n"<<"----- Config details -----" << std::endl; 
+    std::cout << "number of rows: " << numOfRow << std::endl;
+    std::cout << "column count: " << static_cast<int>(columnCount) << std::endl;
+    std::cout << "totalbytes: " << totalBytes << std::endl;
+    std::cout << "primarykey location: " << static_cast<int>(colKey) << std::endl;
+
+    std::vector<unsigned char> storedBytes;
+    storedBytes.reserve(totalBytes);
+    std::string fullOutput;
+    for(int i = 0; i < columnCount; i++){
+        char columnName[30];
+        logFile.read(columnName, sizeof(columnName));
+        bool isChar;
+        logFile.read(reinterpret_cast<char*>(&isChar),sizeof(isChar));
+        int columnBytes;
+        // Char
+        std::string isCharString;
+        if(isChar == 1){
+            isCharString = true;
+            logFile.read(reinterpret_cast<char*>(&columnBytes),1);
+        }else{
+            isCharString = false;
+            logFile.read(reinterpret_cast<char*>(&columnBytes),4);
+        }
+
+        std::cout << "----- Column details-----" << std::endl; 
+        std::cout << "name: " << columnName << std::endl;
+        std::cout << "is this column char : " << isCharString << std::endl;
+        // std::cout << "columnBytes: " << columnBytes << std::endl;
+        
+        // INT
+        std::string outputType;
+        if(isChar == 0){
+            outputType = "integer";
+        }else{
+            outputType = "char";
+        }
+        // row total bytes (i.e. 100 bytes, 200b byte, etc)
+        // bool loopStop = true;
+        while(1){
+            std::cout << "Column(" << outputType <<"): " << columnName << std::endl;
+            if(isChar == 0){
+                uint32_t inputNumber = 0;
+                std::cout << "Input data: ";
+                std::cin >> inputNumber;
+                if(std::cin.fail()){
+                    invalidAction();
+                    continue;
+                }else{
+                    fullOutput = fullOutput + std::to_string(inputNumber) + "|";
+                    unsigned char* bytes = reinterpret_cast<unsigned char*>(&inputNumber);
+                    storedBytes.insert(storedBytes.end(), bytes, bytes + sizeof(uint32_t));
+                    break;
+                }
+            }else{
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                char inputBuffer[columnBytes];
+                std::cout << "Input data: ";
+                std::cin.getline(inputBuffer, columnBytes);
+                if(std::cin.fail()){
+                    invalidAction();
+                    continue;
+                }else{
+                    fullOutput = fullOutput + inputBuffer + "|";
+                    size_t length = std::strlen(inputBuffer);
+                    storedBytes.insert(
+                        storedBytes.end(),
+                        inputBuffer,                 
+                        inputBuffer + length
+                    );
+                    break;
+                }
+            }
+        }
+    }
+    std::cout << "----- Inputted data -----" << std::endl;
+    std::cout << fullOutput << std::endl;
+    logFile.close();
 }

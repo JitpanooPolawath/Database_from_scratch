@@ -1,6 +1,8 @@
 CFLAG = -Wall -Wextra -std=c++11 # Good practice to include warnings and a C++ standard
 
-all: clean query
+all: query
+
+reset: clean query
 
 query: main.o datapage.o component.o readInput.o
 	@echo "Producing query application"

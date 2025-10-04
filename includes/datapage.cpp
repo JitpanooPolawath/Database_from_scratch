@@ -12,7 +12,7 @@ void createLogFile(std::string fileName, bool isTime){
     if(isTime){
 
     }else{
-        uint8_t tempRow = 0;
+        uint32_t tempRow = 0;
         uint8_t columnCount = 0;
         uint16_t totalBytes = 0;
         uint8_t colKey = 0;
@@ -269,7 +269,7 @@ void datapage::setLogColumnCount(uint8_t count, uint16_t totalbytes, uint8_t col
         std::cout << "Error: Log file did not open correctly" << std::endl;
         exit(0); // Use a non-zero exit code for errors
     }
-    logFile.seekp(1,std::fstream::beg);
+    logFile.seekp(sizeof(uint32_t),std::fstream::beg);
     logFile.write(reinterpret_cast<char*>(&count),sizeof(uint8_t));
     logFile.write(reinterpret_cast<char*>(&totalbytes),sizeof(totalbytes));
     logFile.write(reinterpret_cast<char*>(&colKey),sizeof(colKey));

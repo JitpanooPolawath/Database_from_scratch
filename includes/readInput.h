@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "datapage.h"
 
@@ -10,3 +11,5 @@ enum queryType {CREATE, INSERT, UPDATE, DEL, SELECT, EMP};
 numFile readInitialInput();
 
 void readInputColumn(datapage* datapageName);
+
+void readInsertion(std::string fileName);
