@@ -28,9 +28,7 @@ void createLogFile(std::string fileName, bool isTime){
 
 datapage::datapage(std::string tableName) {
     // Num row is the number of row the root page current have
-    numRow = 0;
-    bytesLeft = 8096;
-    isFull = 0;
+    
     fileName = tableName + ".mdf";
     logFileName = tableName + "_config" + ".ldf";
     logTimeName = tableName + "_log" + ".ldf";
@@ -79,6 +77,9 @@ void datapage::createRoot() {
     uint32_t emptyAddress=0;
     uint32_t emptyNumber = 0;
     uint8_t currentID = 0;
+    uint8_t numRow = 0;      // (1 byte)
+    uint16_t bytesLeft = 8096;   // (2 bytes)
+    uint8_t isFull = 0; // (1 byte)
     datapageFile.write(reinterpret_cast<char*>(&numRow), sizeof(numRow));
     datapageFile.write(reinterpret_cast<char*>(&bytesLeft), sizeof(bytesLeft));
     datapageFile.write(reinterpret_cast<char*>(&isFull), sizeof(isFull));
@@ -104,8 +105,7 @@ void datapage::createIntermediate(){
     returnHeader header = getHeader(0, "root");
     updateHeader(0, header.parentRow,header.parentBytes);
 
-    numRow = header.parentRow + 1;
-    bytesLeft = header.parentBytes;
+    uint8_t numRow = header.parentRow + 1;
     std::cout << "Address: "<< 0 << std::endl;
 
     // Input intermediate address to root page
@@ -165,10 +165,11 @@ void datapage::createDataPage(){
         std::cout << "Error: file did not open correctly" << std::endl;
         exit(0);
     }
-    int getParentRow = 8192 * numRow;
-    if(numRow > 1){
+    returnHeader rootheader = getHeader(0, "root-datapage");
+    int getParentRow = 8192 * rootheader.parentRow;
+    if(rootheader.parentRow > 1){
         // TODO: CHANGED 8192 * 7 * (numRow-1) -> 8192 + ((numRow-1) * INDAOFFSET * 8192)
-        getParentRow = 8192 + ((numRow-1) * INDAOFFSET * 8192);
+        getParentRow = 8192 + ((rootheader.parentRow-1) * INDAOFFSET * 8192);
     }
     returnHeader header = getHeader(getParentRow, "intermediate");
     updateHeader(getParentRow, header.parentRow,header.parentBytes);
