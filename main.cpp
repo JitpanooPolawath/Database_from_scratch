@@ -7,6 +7,7 @@
 
 
 void createTable(datapage* filePage){
+
         filePage->createRoot();
         if(true){
             readInputColumn(filePage);
@@ -37,8 +38,19 @@ int main(){
     numFile queryMode = readInitialInput();
 
     if (queryMode.mode == 0){
-        datapage filePage(queryMode.fileName);
-        createTable(&filePage);
+        std::ifstream f(queryMode.fileName);
+        if(!f.good()){
+            std::string fileName = queryMode.fileName + ".mdf";
+            std::string logFileName = queryMode.fileName + "_config" + ".ldf";
+            std::string logTimeName = queryMode.fileName + "_log" + ".ldf";
+            std::cout << "Deleting original file" << std::endl;
+            std::remove(fileName.c_str());
+            std::remove(logFileName.c_str());
+            std::remove(logTimeName.c_str());
+        }else{
+            datapage filePage(queryMode.fileName);
+            createTable(&filePage);
+        }
     }else if(queryMode.mode == 1){
         readInsertion(queryMode.fileName);
         // insert();
