@@ -20,6 +20,7 @@ int traversal(std::fstream* mainFile,bool useCurrentMin, uint32_t minimum, int c
     std::vector<char> buffer(pageHeader);
     pHeader curHead;
     getHeader(buffer, mainFile, &curHead, curAddr);
+    std::cout<<"=========== At: "<< curAddr <<std::endl;
     std::cout<<curHead.row<<std::endl;
     std::cout<<curHead.bytesLeft<<std::endl;
     std::cout<<curHead.isFull<<std::endl;
@@ -44,8 +45,7 @@ int traversal(std::fstream* mainFile,bool useCurrentMin, uint32_t minimum, int c
     uint32_t curPageAddr;
     mainFile->read(reinterpret_cast<char*>(&curPageVal),sizeof(curPageVal));
     mainFile->read(reinterpret_cast<char*>(&curPageAddr),sizeof(curPageAddr));
-    std::cout<<curPageAddr<<std::endl;
-    std::cout<<"--------------"<<std::endl;
+    std::cout<< "-------------- At: " << curPageAddr <<std::endl;
     for(int i = 0; i < curHead.row; i++){
         curMin.mini = curPageVal;
         curMin.addr = curPageAddr;
@@ -62,8 +62,12 @@ int traversal(std::fstream* mainFile,bool useCurrentMin, uint32_t minimum, int c
         }
         mainFile->read(reinterpret_cast<char*>(&curPageVal),4);
         mainFile->read(reinterpret_cast<char*>(&curPageAddr),4);
+        std::cout<<"===========" << std::endl;
         std::cout<<static_cast<uint32_t>(prevMin.mini)<<std::endl;
         std::cout<<static_cast<uint32_t>(prevMin.addr)<<std::endl;
+        std::cout<<static_cast<uint32_t>(prevMin.mini)<<std::endl;
+        std::cout<<static_cast<uint32_t>(prevMin.addr)<<std::endl;
+        std::cout<<"===========" << std::endl;
     }
 
     // getHeader(buffer, mainFile, &curHead, 8192+8192);
@@ -79,5 +83,5 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, bool u
         std::cout << "File open error at insertion" << std::endl;
         exit(1);
     }
-    int address = traversal(&mainFile, useCurrentMin, 3,8192);
+    int address = traversal(&mainFile, useCurrentMin, 3,0);
 }

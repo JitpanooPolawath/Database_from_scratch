@@ -201,7 +201,9 @@ void datapage::createDataPage(){
     uint16_t startingBytes = 8096;
     uint8_t currentID = header.parentRow;
     uint32_t prevAddress = 0;
-    if(currentID != 0){
+    if(currentID == 0 && rootheader.parentRow != 1 ){
+        prevAddress = header.parentAddress - 8192 ;
+    }else if(currentID != 0){
         prevAddress =  8192 + header.parentAddress + (8192 * (currentID - 1)) ;
     }
     uint32_t nextAddress = 8192 + header.parentAddress + (8192 * (currentID + 1));
