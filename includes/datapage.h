@@ -29,7 +29,7 @@ private:
     // page header (96 bytes)
     uint8_t numRow;      // (1 byte)
     uint16_t bytesLeft;   // (2 bytes)
-    unsigned char isFull; // (1 byte)
+    uint8_t isFull; // (1 byte)
     // 92 bytes left
     char pageHeaderBytes[EMPTYHEADER] = {0};
 

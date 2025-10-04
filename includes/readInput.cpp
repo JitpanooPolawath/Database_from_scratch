@@ -179,7 +179,7 @@ std::vector<unsigned char> readInsertion(std::string inputFileName){
         if(isChar == 0){
             outputType = "integer";
         }else{
-            outputType = "char";
+            outputType = "char[" + std::to_string(columnBytes)+"]";
         }
         // row total bytes (i.e. 100 bytes, 200b byte, etc)
         // bool loopStop = true;

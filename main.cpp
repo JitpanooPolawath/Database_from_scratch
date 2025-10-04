@@ -28,7 +28,7 @@ void createTable(datapage* filePage){
         filePage->createDataPage();
         filePage->createDataPage();
         filePage->createIntermediate();
-        filePage->createDataPage();
+        // filePage->createDataPage();
 
 }
 bool pathExists(const char* path) {
@@ -41,21 +41,21 @@ int main(){
     // Reading input user
     numFile queryMode = readInitialInput();
     std::string fileName = queryMode.fileName + ".mdf";
-    if(pathExists(fileName.c_str())){
+    if(pathExists(fileName.c_str()) && queryMode.mode == 0){
         std::string logFileName = queryMode.fileName + "_config" + ".ldf";
         std::string logTimeName = queryMode.fileName + "_log" + ".ldf";
         std::cout << "Deleting original file" << std::endl;
         std::remove(fileName.c_str());
         std::remove(logFileName.c_str());
         std::remove(logTimeName.c_str());
-    }else{
-        datapage filePage(queryMode.fileName);
-        if (queryMode.mode == 0){
-            createTable(&filePage);
-        }else if(queryMode.mode == 1){
-            std::vector<unsigned char> inputtedRow = readInsertion(queryMode.fileName);
-            // insert(inputtedRow, queryMode.fileName, false);
-        }
+    }
+    datapage filePage(queryMode.fileName);
+    if (queryMode.mode == 0){
+        createTable(&filePage);
+    }else if(queryMode.mode == 1){
+        std::vector<unsigned char> inputtedRow;
+        // std::vector<unsigned char> inputtedRow = readInsertion(queryMode.fileName);
+        insert(inputtedRow, queryMode.fileName, false);
     }
     
     return 0;

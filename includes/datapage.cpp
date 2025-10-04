@@ -109,7 +109,7 @@ void datapage::createIntermediate(){
     std::cout << "Address: "<< 0 << std::endl;
 
     // Input intermediate address to root page
-    datapageFile.seekp(96,std::fstream::cur);
+    datapageFile.seekp(96,std::ios::beg);
     // TODO: Update to sizeof(uint16_t) + (4 * (numRow - 1))
     if(numRow == 1){
         datapageFile.seekp(4*(numRow - 1),std::fstream::cur);
@@ -174,12 +174,11 @@ void datapage::createDataPage(){
     updateHeader(getParentRow, header.parentRow,header.parentBytes);
     std::cout << "Address: "<< header.parentAddress << std::endl;
     // Input DataPage address to Intermediate page
-    datapageFile.seekp(96,std::fstream::cur);
-    datapageFile.seekp(4*(header.parentRow),std::fstream::cur);
-    if(numRow == 0){
-        datapageFile.seekp(4*(header.parentRow),std::fstream::cur);
+    datapageFile.seekp(header.parentAddress + 96,std::ios::beg);
+    if(header.parentRow == 0){
+        datapageFile.seekp((header.parentRow),std::fstream::cur);
     }else{
-        datapageFile.seekp(4*(header.parentRow) + 4,std::fstream::cur);
+        datapageFile.seekp((8*header.parentRow),std::fstream::cur);
     }
     uint32_t minimumNumber = UINT32_MAX;
     datapageFile.write(reinterpret_cast<char*>(&minimumNumber),sizeof(minimumNumber));
