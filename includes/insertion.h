@@ -26,6 +26,11 @@ struct pHeader{
     int nextAddr;
 };
 
+struct doubleAddr{
+    int prevAddr;
+    int curAddr;
+};
+
 struct minimus{
     int mini;
     int addr;
@@ -36,6 +41,6 @@ void getHeader(std::vector<char> header, std::fstream* mainFile, pHeader* curHea
 Given an fstream, it will traverse through the file to find the address of the
 datapage. Using pageheader to iterate through it.
 */
-int traversal(std::fstream mainFile, bool useCurrentMin, uint32_t minimum ,int curAddr);
+doubleAddr traversal(std::fstream mainFile, bool useCurrentMin, uint32_t minimum ,int curAddr);
 
 void insert(std::vector<unsigned char> inputtedRow, std::string fileName ,bool useCurrentMin);

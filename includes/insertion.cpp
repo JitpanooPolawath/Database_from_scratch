@@ -15,7 +15,7 @@ void getHeader(std::vector<char> header, std::fstream* mainFile, pHeader* curHea
 }
 
 // Traverse through the root and intermediate page to get datapage
-int traversal(std::fstream* mainFile,bool useCurrentMin, uint32_t minimum, int curAddr){
+doubleAddr traversal(std::fstream* mainFile,bool useCurrentMin, uint32_t minimum, int curAddr){
     const size_t pageHeader = 96;
     std::vector<char> buffer(pageHeader);
     pHeader curHead;
@@ -37,6 +37,13 @@ int traversal(std::fstream* mainFile,bool useCurrentMin, uint32_t minimum, int c
     minimus curMin;
     curMin.mini = -1;
     curMin.addr = -1;
+    doubleAddr temp;
+    if(curHead.row == 0){
+        temp.prevAddr = prevMin.addr;
+        temp.curAddr = curHead.curAddr;
+        return temp;
+    }
+
 
     // Start of the pageAddr + pageHeader, to get to the page body
     // for loop to iterate through the root and intermediate page - worst case O(n^2)
@@ -49,14 +56,14 @@ int traversal(std::fstream* mainFile,bool useCurrentMin, uint32_t minimum, int c
     for(int i = 0; i < curHead.row; i++){
         curMin.mini = curPageVal;
         curMin.addr = curPageAddr;
-        if(minimum < curPageVal){
-            if(prevMin.addr != -1){
-                traversal(mainFile,false,minimum,prevMin.addr);
-            }else{
-                traversal(mainFile,false,minimum,curMin.addr);
-            }
+        if(minimum < curPageVal && i != 0){
+            temp = traversal(mainFile,false,minimum,prevMin.addr);
             break;
-        }else{
+        }else if(minimum < curPageVal && i == 0){
+            temp = traversal(mainFile,false,minimum,curMin.addr);
+            break;
+        }
+        else{
             prevMin.mini = curPageVal;
             prevMin.addr = curPageAddr;
         }
@@ -70,8 +77,7 @@ int traversal(std::fstream* mainFile,bool useCurrentMin, uint32_t minimum, int c
         std::cout<<"===========" << std::endl;
     }
 
-    // getHeader(buffer, mainFile, &curHead, 8192+8192);
-    return 0;
+    return temp;
 }
 
 
@@ -83,5 +89,8 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, bool u
         std::cout << "File open error at insertion" << std::endl;
         exit(1);
     }
-    int address = traversal(&mainFile, useCurrentMin, 3,0);
+    doubleAddr bothAddr;
+    bothAddr = traversal(&mainFile, useCurrentMin, 3,0);
+    std::cout<<static_cast<uint32_t>(bothAddr.prevAddr)<<std::endl;
+    std::cout<<static_cast<uint32_t>(bothAddr.curAddr)<<std::endl;
 }
