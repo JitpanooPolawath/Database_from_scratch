@@ -111,7 +111,13 @@ void datapage::createIntermediate(){
     // Input intermediate address to root page
     datapageFile.seekp(96,std::fstream::cur);
     // TODO: Update to sizeof(uint16_t) + (4 * (numRow - 1))
-    datapageFile.seekp(4*(numRow - 1),std::fstream::cur);
+    if(numRow == 1){
+        datapageFile.seekp(4*(numRow - 1),std::fstream::cur);
+    }else{
+        datapageFile.seekp(4*(numRow - 1) + 4,std::fstream::cur);
+    }
+    uint32_t minimumNumber = UINT32_MAX;
+    datapageFile.write(reinterpret_cast<char*>(&minimumNumber),sizeof(minimumNumber));
     uint32_t address;
     if (header.parentRow != 0){
          // TODO: CHANGE  * 8192 * 7 -> 8192 + (header.parentRow * INDAOFFSET /* (6/11) */ * 8192)  
@@ -133,13 +139,12 @@ void datapage::createIntermediate(){
     uint8_t tempFull = 0;
     uint8_t emptyRow = 0;
     uint16_t startingBytes = 8096;
-    uint32_t minimumNumber = UINT32_MAX;
     uint8_t currentID = header.parentRow;
     uint32_t prevAddress = 0;
     if(currentID != 0){
-        prevAddress =  8192 + (8192 * currentID -1 * INDAOFFSET) ;
+        prevAddress =  8192 + (8192 * (currentID - 1) * INDAOFFSET) ;
     }
-    uint32_t nextAddress = 8192 + (8192 * currentID + 1 * INDAOFFSET);
+    uint32_t nextAddress = 8192 + (8192 * (currentID + 1) * INDAOFFSET);
     datapageFile.write(reinterpret_cast<char*>(&emptyRow),sizeof(emptyRow));
     datapageFile.write(reinterpret_cast<char*>(&startingBytes),sizeof(startingBytes));
     datapageFile.write(reinterpret_cast<char*>(&tempFull),sizeof(tempFull));
@@ -171,6 +176,13 @@ void datapage::createDataPage(){
     // Input DataPage address to Intermediate page
     datapageFile.seekp(96,std::fstream::cur);
     datapageFile.seekp(4*(header.parentRow),std::fstream::cur);
+    if(numRow == 0){
+        datapageFile.seekp(4*(header.parentRow),std::fstream::cur);
+    }else{
+        datapageFile.seekp(4*(header.parentRow) + 4,std::fstream::cur);
+    }
+    uint32_t minimumNumber = UINT32_MAX;
+    datapageFile.write(reinterpret_cast<char*>(&minimumNumber),sizeof(minimumNumber));
     uint32_t address = header.parentAddress + 8192 * (header.parentRow+1);
     datapageFile.write(reinterpret_cast<char*>(&address),sizeof(address));
     datapageFile.close();
@@ -187,7 +199,6 @@ void datapage::createDataPage(){
     uint8_t tempFull = 1;
     uint8_t emptyRow = 0;
     uint16_t startingBytes = 8096;
-    uint32_t minimumNumber = UINT32_MAX;
     uint8_t currentID = header.parentRow;
     uint32_t prevAddress = 0;
     if(currentID != 0){
