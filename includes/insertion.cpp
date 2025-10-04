@@ -49,7 +49,7 @@ int traversal(std::fstream* mainFile,bool useCurrentMin, uint32_t minimum, int c
     for(int i = 0; i < curHead.row; i++){
         curMin.mini = curPageVal;
         curMin.addr = curPageAddr;
-        if(minimum < 2){
+        if(minimum < curPageVal){
             if(prevMin.addr != -1){
                 traversal(mainFile,false,minimum,prevMin.addr);
             }else{

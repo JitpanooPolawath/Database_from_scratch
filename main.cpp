@@ -18,16 +18,16 @@ void createTable(datapage* filePage){
         // }
         filePage->createIntermediate();
         filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createIntermediate();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createIntermediate();
         // filePage->createDataPage();
 
 }
