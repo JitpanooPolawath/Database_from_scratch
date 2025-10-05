@@ -190,11 +190,16 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     std::cout<<confHeader.totalBytes<<std::endl;
     std::cout<<static_cast<int>(confHeader.keyBytes)<<std::endl;
 
-    const size_t pageHeader = 96;
-    std::vector<char> buffer(pageHeader);
-    pHeader curHead;
-    getHeader(buffer, &mainFile, &curHead, theAddr);
     std::cout << "====== Intermediate address ======\n" << intermediateAddr <<std::endl;
+    const size_t pageHeader = 96;
+    std::vector<char> bufferI(pageHeader);
+    pHeader interHead;
+    getHeader(bufferI, &mainFile, &interHead, intermediateAddr);
+    std::cout<<interHead.nextAddr<<std::endl;
+
+    std::vector<char> bufferP(pageHeader);
+    pHeader curHead;
+    getHeader(bufferP, &mainFile, &curHead, theAddr);
     std::cout<<"====== Datapage header ====== \nAt address: "<< theAddr <<std::endl;
     std::cout<<static_cast<int>(curHead.row)<<std::endl;
     std::cout<<curHead.bytesLeft<<std::endl;
@@ -212,7 +217,7 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     for(int i = 0; i < curHead.row; i++){
         uint32_t curKeyVal;
         mainFile.read(reinterpret_cast<char*>(&curKeyVal),sizeof(curKeyVal));
-        std::cout<<curKeyVal<<std::endl;
+        std::cout<<"current value: "<<curKeyVal<<std::endl;
         if(minimum < curKeyVal){
             isSmaller = true;
             count = i;
@@ -249,8 +254,9 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     }
     std::cout<<"====== Updating datapage header ======"<<std::endl;
     updateHeader(&mainFile,theAddr,updatedBytesLeft,++curHead.row, minimum, false);
-    updateInterRow(&mainFile,intermediateAddr+96+(8*count),minimum);
+    updateInterRow(&mainFile,intermediateAddr+96+(8*curHead.curID),minimum);
     updateHeader(&mainFile,intermediateAddr,0,0, minimum, true);
+    updateInterRow(&mainFile,0+96+(8*interHead.curID),minimum);
     std::cout<<"====== Updating config & log file ======"<<std::endl;
     updateLogTimestamp(0,&lTainFile);
     updateConfig(++confHeader.tempRow, &lainFile);
