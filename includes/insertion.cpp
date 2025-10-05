@@ -1,5 +1,18 @@
 #include "insertion.h"
 
+
+void copyBytes(std::fstream* mainFile, int startingRowAddr, int endingRowAddr, int toAddr) {
+    int bytesToCopy = endingRowAddr - startingRowAddr;    
+    std::vector<char> buffer(bytesToCopy);
+    
+    mainFile->seekg(startingRowAddr, std::fstream::beg);
+    mainFile->read(buffer.data(), bytesToCopy);
+    
+    mainFile->seekp(toAddr, std::fstream::beg);
+    mainFile->write(buffer.data(), bytesToCopy);
+    mainFile->flush();
+}
+
 void getConfig(std::vector<char> header, std::fstream* conFile, cHeader* curHead){
     conFile->read(header.data(), header.capacity());   
     std::memcpy(&curHead->tempRow, header.data(), 4);
@@ -32,7 +45,6 @@ void updateHeader(std::fstream* mainFile ,int curAddr, uint16_t updatedBytes, ui
     mainFile->flush();
 }
 
-
 void updateLogTimestamp(uint8_t isValue, std::fstream* logTimeFile){
     // isValue: 0 = insert action, 1 = update action, 2 = delete action
     logTimeFile->write(reinterpret_cast<char*>(&isValue),sizeof(uint8_t));
@@ -47,8 +59,6 @@ void updateConfig(uint32_t numRow, std::fstream* logFile){
     logFile->seekp(0,std::fstream::beg);
     logFile->write(reinterpret_cast<char*>(&numRow),sizeof(uint32_t));
 }
-
-
 
 // Traverse through the root and intermediate page to get datapage
 doubleAddr traversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr){
@@ -172,6 +182,7 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     for(int i = 0; i < curHead.row; i++){
         uint32_t curKeyVal;
         mainFile.read(reinterpret_cast<char*>(&curKeyVal),sizeof(curKeyVal));
+        std::cout<<curKeyVal<<std::endl;
         if(minimum < curKeyVal){
             isSmaller = true;
             count = i;
@@ -180,16 +191,24 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
             std::cout<<"ID already exist in table. Insertion failed!";
             return;
         }
-        mainFile.seekg(confHeader.totalBytes);
+        mainFile.seekg(confHeader.totalBytes-4,std::ios::cur);
     }
     std::cout<<"====== Inputting rows ======"<<std::endl;
     // Copy elements
     uint32_t startingRowAddr = (curHead.curAddr + 96) + (count * confHeader.totalBytes);
+    uint32_t destiRowAddr = (curHead.curAddr + 96) + ((count+1) * confHeader.totalBytes);
     uint32_t endingRowAddr = (curHead.curAddr + 96) + (curHead.row * confHeader.totalBytes);
     uint32_t lastStartRowAddr = endingRowAddr - confHeader.totalBytes;
     uint32_t lastEndRowAddr = endingRowAddr;
     // Insertion
-    std::cout << startingRowAddr << " " << endingRowAddr << " " << lastStartRowAddr << " " << lastEndRowAddr<<std::endl;
+    bool skipCopy = false;
+    if(count == curHead.row){
+        skipCopy = true;
+    }
+    if(!skipCopy){
+        copyBytes(&mainFile,startingRowAddr,endingRowAddr,destiRowAddr);
+    }
+    // std::cout << startingRowAddr << " " << endingRowAddr << " " << lastStartRowAddr << " " << lastEndRowAddr<<std::endl;
     int writePos = theAddr+96+(count * confHeader.totalBytes);
     mainFile.seekp(writePos,std::fstream::beg);
     mainFile.write(reinterpret_cast<const char*>(inputtedRow.data()),inputtedRow.size());
@@ -199,6 +218,9 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     if(updatedBytesLeft > 0){
         isBytesLeft = false;
     }
+    
+    
+
     std::cout<<"====== Updating datapage header ======"<<std::endl;
     if(minimum <= curHead.minNum){
         updateHeader(&mainFile,theAddr,updatedBytesLeft,++curHead.row, minimum);
