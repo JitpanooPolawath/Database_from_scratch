@@ -35,13 +35,26 @@ void getHeader(std::vector<char> header, std::fstream* mainFile, pHeader* curHea
     std::memcpy(&curHead->nextAddr, header.data() + 17, 4);
 }
 
-void updateHeader(std::fstream* mainFile ,int curAddr, uint16_t updatedBytes, uint8_t rowCount, uint32_t minimum){
-    mainFile->seekp(curAddr,std::fstream::beg);
-    mainFile->write(reinterpret_cast<char*>(&rowCount), sizeof(rowCount));
-    mainFile->write(reinterpret_cast<char*>(&updatedBytes), sizeof(updatedBytes));
-    mainFile->seekp(curAddr+8,std::fstream::beg);
-    mainFile->write(reinterpret_cast<char*>(&minimum), sizeof(minimum));
-    mainFile->flush();
+void updateHeader(std::fstream* mainFile ,int curAddr, uint16_t updatedBytes, uint8_t rowCount, uint32_t minimum, bool isInter){
+    mainFile->seekg(curAddr+8,std::fstream::beg);
+    uint32_t tempMin;
+    mainFile->read(reinterpret_cast<char*>(&tempMin),sizeof(tempMin));
+    if(minimum < tempMin){
+        if(!isInter){
+            mainFile->seekp(curAddr,std::fstream::beg);
+            mainFile->write(reinterpret_cast<char*>(&rowCount), sizeof(rowCount));
+            mainFile->write(reinterpret_cast<char*>(&updatedBytes), sizeof(updatedBytes));
+        }
+        mainFile->seekp(curAddr+8,std::fstream::beg);
+        mainFile->write(reinterpret_cast<char*>(&minimum), sizeof(minimum));
+        mainFile->flush();
+    }else{
+        if(!isInter){
+            mainFile->seekp(curAddr,std::fstream::beg);
+            mainFile->write(reinterpret_cast<char*>(&rowCount), sizeof(rowCount));
+            mainFile->write(reinterpret_cast<char*>(&updatedBytes), sizeof(updatedBytes));
+        }
+    }
 }
 
 void updateInterRow(std::fstream* mainFile,int addr, uint32_t minimum){
@@ -110,35 +123,34 @@ doubleAddr traversal(std::fstream* mainFile,int depth, uint32_t minimum, int cur
     uint32_t curPageAddr;
     mainFile->read(reinterpret_cast<char*>(&curPageVal),sizeof(curPageVal));
     mainFile->read(reinterpret_cast<char*>(&curPageAddr),sizeof(curPageAddr));
+    bool isLast = false;
     for(int i = 0; i < curHead.row; i++){
         curMin.mini = curPageVal;
         curMin.addr = curPageAddr;
+        if(depth == 1){
+                *parentAddr = curAddr;
+        }
         if(minimum < curPageVal && i != 0){
-            if(depth == 1){
-                *parentAddr = curAddr;
-            }
             temp = traversal(mainFile,++depth,minimum,prevMin.addr, parentAddr);
+            isLast = false;
             break;
-        }else if(minimum < curPageVal && i == 0){
-            if(depth == 1){
-                *parentAddr = curAddr;
-            }
+        }else if(minimum < curPageVal && i == 0){    
             temp = traversal(mainFile,++depth,minimum,curMin.addr, parentAddr);
+            isLast = false;
             break;
         }
         else{
             prevMin.mini = curPageVal;
             prevMin.addr = curPageAddr;
         }
+        isLast = true;
         mainFile->read(reinterpret_cast<char*>(&curPageVal),4);
         mainFile->read(reinterpret_cast<char*>(&curPageAddr),4);
-        // std::cout<<"===========" << std::endl;
-        // std::cout<<static_cast<uint32_t>(prevMin.mini)<<std::endl;
-        // std::cout<<static_cast<uint32_t>(prevMin.addr)<<std::endl;
-        // std::cout<<static_cast<uint32_t>(prevMin.mini)<<std::endl;
-        // std::cout<<static_cast<uint32_t>(prevMin.addr)<<std::endl;
-        // std::cout<<"===========" << std::endl;
     }
+    if(isLast){
+        temp = traversal(mainFile,++depth,minimum,curMin.addr, parentAddr);
+    }
+
     return temp;
 }
 
@@ -230,21 +242,15 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     int writePos = theAddr+96+(count * confHeader.totalBytes);
     mainFile.seekp(writePos,std::fstream::beg);
     mainFile.write(reinterpret_cast<const char*>(inputtedRow.data()),inputtedRow.size());
-    
     bool isBytesLeft = true;
     uint16_t updatedBytesLeft = curHead.bytesLeft - confHeader.totalBytes;
     if(updatedBytesLeft > 0){
         isBytesLeft = false;
     }
-    
-
     std::cout<<"====== Updating datapage header ======"<<std::endl;
-    if(minimum <= curHead.minNum){
-        updateHeader(&mainFile,theAddr,updatedBytesLeft,++curHead.row, minimum);
-    }else{
-        updateHeader(&mainFile,theAddr,updatedBytesLeft,++curHead.row, curHead.minNum);
-    }
+    updateHeader(&mainFile,theAddr,updatedBytesLeft,++curHead.row, minimum, false);
     updateInterRow(&mainFile,intermediateAddr+96+(8*count),minimum);
+    updateHeader(&mainFile,intermediateAddr,0,0, minimum, true);
     std::cout<<"====== Updating config & log file ======"<<std::endl;
     updateLogTimestamp(0,&lTainFile);
     updateConfig(++confHeader.tempRow, &lainFile);

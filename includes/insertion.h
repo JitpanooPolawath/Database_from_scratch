@@ -46,7 +46,7 @@ struct cHeader{
 
 void getConfig(std::vector<char> header, std::fstream* conFile, cHeader* curHead);
 
-void updateHeader(std::fstream* mainFile ,int curAddr, uint16_t updatedBytes, uint8_t rowCount, uint32_t minimum);
+void updateHeader(std::fstream* mainFile ,int curAddr, uint16_t updatedBytes, uint8_t rowCount, uint32_t minimum, bool isInter);
 
 void updateInterRow(std::fstream* mainFile,int addr, uint32_t minimum);
 
