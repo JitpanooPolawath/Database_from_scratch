@@ -212,7 +212,7 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
 
     bool isSmaller = false;
     mainFile.seekg(theAddr+96+confHeader.keyBytes-4);
-    std::cout<<"====== In for loop ======"<<std::endl;
+    std::cout<<"====== In for-loop ======"<<std::endl;
     int count = curHead.row;
     for(int i = 0; i < curHead.row; i++){
         uint32_t curKeyVal;
