@@ -232,7 +232,7 @@ insertionRow readInsertion(std::string inputFileName){
         }
     }
     std::cout << "====== Inputted data ======" << std::endl;
-    std::cout << fullOutput << std::endl;
+    std::cout << "row: " <<fullOutput << std::endl;
     logFile.close();
     insertionRow temp;
     temp.row = storedBytes;

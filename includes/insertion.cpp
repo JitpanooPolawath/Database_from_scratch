@@ -185,30 +185,30 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     cHeader confHeader;
     getConfig(cBuffer,&lainFile,&confHeader);
     std::cout<<"====== Config header ======"<<std::endl;
-    std::cout<<confHeader.tempRow<<std::endl;
-    std::cout<<static_cast<int>(confHeader.columnCount)<<std::endl;
-    std::cout<<confHeader.totalBytes<<std::endl;
-    std::cout<<static_cast<int>(confHeader.keyBytes)<<std::endl;
+    std::cout<<"current number of row: "<<confHeader.tempRow<<std::endl;
+    std::cout<<"number of column in table: "<<static_cast<int>(confHeader.columnCount)<<std::endl;
+    std::cout<<"maximum row size(bytes): "<<confHeader.totalBytes<<std::endl;
+    std::cout<<"location of primary key: "<<static_cast<int>(confHeader.keyBytes)<<std::endl;
 
-    std::cout << "====== Intermediate address ======\n" << intermediateAddr <<std::endl;
+    std::cout << "====== Intermediate address ======\n" <<"intermediate address: "<<intermediateAddr <<std::endl;
     const size_t pageHeader = 96;
     std::vector<char> bufferI(pageHeader);
     pHeader interHead;
     getHeader(bufferI, &mainFile, &interHead, intermediateAddr);
-    std::cout<<interHead.nextAddr<<std::endl;
+    std::cout<<"next intermediate page address: "<<interHead.nextAddr<<std::endl;
 
     std::vector<char> bufferP(pageHeader);
     pHeader curHead;
     getHeader(bufferP, &mainFile, &curHead, theAddr);
     std::cout<<"====== Datapage header ====== \nAt address: "<< theAddr <<std::endl;
-    std::cout<<static_cast<int>(curHead.row)<<std::endl;
-    std::cout<<curHead.bytesLeft<<std::endl;
-    std::cout<<curHead.isFull<<std::endl;
-    std::cout<<curHead.curAddr<<std::endl;
-    std::cout<<curHead.minNum<<std::endl;
-    std::cout<<curHead.curID<<std::endl;
-    std::cout<<curHead.prevAddr<<std::endl;
-    std::cout<<curHead.nextAddr<<std::endl;
+    std::cout<<"datapage row count: "<<static_cast<int>(curHead.row)<<std::endl;
+    std::cout<<"datapage bytes left: "<<curHead.bytesLeft<<std::endl;
+    std::cout<<"is datapage full(not correct): "<<curHead.isFull<<std::endl;
+    std::cout<<"datapage address: "<<curHead.curAddr<<std::endl;
+    std::cout<<"minimum value: "<<curHead.minNum<<std::endl;
+    std::cout<<"datapage ID: "<<curHead.curID<<std::endl;
+    std::cout<<"previous datapage address: "<<curHead.prevAddr<<std::endl;
+    std::cout<<"next datapage address: "<<curHead.nextAddr<<std::endl;
 
     bool isSmaller = false;
     mainFile.seekg(theAddr+96+confHeader.keyBytes-4);
