@@ -97,7 +97,7 @@ void readInputColumn(datapage* datapageName){
             invalidAction();
             continue;
         }
-        if(foundPKey == false){
+        if(foundPKey == false && std::strlen(typeIn) == 3){
             std::string inKey;
             std::cout << "Is this column a primary key?(Only one primary key) [y] or [n]: ";
             std::cin >> inKey;

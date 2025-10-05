@@ -165,6 +165,28 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     std::cout<<curHead.prevAddr<<std::endl;
     std::cout<<curHead.nextAddr<<std::endl;
 
+    bool isSmaller = false;
+    mainFile.seekg(theAddr+96+confHeader.keyBytes-4);
+    std::cout<<"====== In for loop ======"<<std::endl;
+    int count = curHead.row;
+    for(int i = 0; i < curHead.row; i++){
+        uint32_t curKeyVal;
+        mainFile.read(reinterpret_cast<char*>(&curKeyVal),sizeof(curKeyVal));
+        if(minimum < curKeyVal){
+            isSmaller = true;
+            count = i;
+            break;
+        }else if(minimum == curKeyVal){
+            std::cout<<"ID already exist in table. Insertion failed!";
+            return;
+        }
+        mainFile.seekg(confHeader.totalBytes);
+    }
+    std::cout<<"====== Inputting rows ======"<<std::endl;
+    int writePos = theAddr+96+(count * confHeader.totalBytes);
+    mainFile.seekp(writePos,std::fstream::beg);
+    mainFile.write(reinterpret_cast<const char*>(inputtedRow.data()),inputtedRow.size());
+    std::cout<<"====== Updating datapage header ======"<<std::endl;
     bool isBytesLeft = true;
     uint16_t updatedBytesLeft = curHead.bytesLeft - confHeader.totalBytes;
     if(updatedBytesLeft > 0){
@@ -175,30 +197,6 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     }else{
         updateHeader(&mainFile,theAddr,updatedBytesLeft,++curHead.row, curHead.minNum);
     }
-    bool isSmaller = false;
-    mainFile.seekg(theAddr+96+confHeader.keyBytes-4);
-    std::cout<<"====== In for loop ======"<<std::endl;
-    int count = curHead.row;
-    for(int i = 0; i < curHead.row; i++){
-        uint32_t curKeyVal;
-        mainFile.read(reinterpret_cast<char*>(&curKeyVal),sizeof(curKeyVal));
-        std::cout<<curKeyVal<<std::endl;
-        if(minimum < curKeyVal){
-            isSmaller = true;
-            count = i;
-            break;
-        }else if(minimum == curKeyVal){
-            count = i+1;
-            break;
-        }
-        mainFile.seekg(confHeader.totalBytes);
-    }
-    std::cout<<"====== Inputting rows ======"<<std::endl;
-    int writePos = theAddr+96+(count * confHeader.totalBytes);
-    mainFile.seekp(writePos,std::fstream::beg);
-    mainFile.write(reinterpret_cast<const char*>(inputtedRow.data()),inputtedRow.size());
-    std::cout<<"====== Updating datapage header ======"<<std::endl;
-    
     std::cout<<"====== Updating config & log file ======"<<std::endl;
     updateLogTimestamp(0,&lTainFile);
     updateConfig(++confHeader.tempRow, &lainFile);
