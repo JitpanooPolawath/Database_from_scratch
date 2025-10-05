@@ -141,32 +141,32 @@ std::vector<unsigned char> readInsertion(std::string inputFileName){
     logFile.read(reinterpret_cast<char*>(&columnCount),sizeof(columnCount));
     uint16_t totalBytes;
     logFile.read(reinterpret_cast<char*>(&totalBytes),sizeof(totalBytes));
-    uint8_t colKey;
+    uint16_t colKey;
     logFile.read(reinterpret_cast<char*>(&colKey),sizeof(colKey));
 
     std::cout <<"\n"<<"----- Config details -----" << std::endl; 
     std::cout << "number of rows: " << numOfRow << std::endl;
     std::cout << "column count: " << static_cast<int>(columnCount) << std::endl;
     std::cout << "totalbytes: " << totalBytes << std::endl;
-    std::cout << "primarykey location: " << static_cast<int>(colKey) << std::endl;
+    std::cout << "totalbytes: " << colKey << std::endl;
 
     std::vector<unsigned char> storedBytes;
     storedBytes.reserve(totalBytes);
     std::string fullOutput;
-    for(int i = 0; i < columnCount; i++){
+    for(int i = 0; i <  static_cast<int>(columnCount); i++){
         char columnName[30];
-        logFile.read(columnName, sizeof(columnName));
+        logFile.read(columnName, 30);
         bool isChar;
         logFile.read(reinterpret_cast<char*>(&isChar),sizeof(isChar));
-        int columnBytes;
+        uint8_t  columnBytes;
         // Char
         std::string isCharString;
         if(isChar == 1){
-            isCharString = true;
+            isCharString = "true";
             logFile.read(reinterpret_cast<char*>(&columnBytes),1);
         }else{
-            isCharString = false;
-            logFile.read(reinterpret_cast<char*>(&columnBytes),4);
+            isCharString = "false";
+            logFile.read(reinterpret_cast<char*>(&columnBytes),1);
         }
 
         std::cout << "----- Column details-----" << std::endl; 
