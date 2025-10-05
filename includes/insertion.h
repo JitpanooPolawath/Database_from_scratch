@@ -40,7 +40,7 @@ struct cHeader{
     uint32_t tempRow;
     uint8_t columnCount;
     uint16_t totalBytes;
-    uint8_t colKey;
+    uint16_t keyBytes;
 };
 
 

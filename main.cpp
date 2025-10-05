@@ -18,17 +18,17 @@ void createTable(datapage* filePage){
         // }
         filePage->createIntermediate();
         filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createDataPage();
-        filePage->createIntermediate();
-        filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createDataPage();
+        // filePage->createIntermediate();
+        // filePage->createDataPage();
 
 }
 bool pathExists(const char* path) {
@@ -53,9 +53,9 @@ int main(){
     if (queryMode.mode == 0){
         createTable(&filePage);
     }else if(queryMode.mode == 1){
-        std::vector<unsigned char> inputtedRow;
-        // std::vector<unsigned char> inputtedRow = readInsertion(queryMode.fileName);
-        // insert(inputtedRow, queryMode.fileName, 0,3,0);
+        // std::vector<unsigned char> inputtedRow;
+        std::vector<unsigned char> inputtedRow = readInsertion(queryMode.fileName);
+        insert(inputtedRow, queryMode.fileName, 0,3,0);
     }
     
     return 0;

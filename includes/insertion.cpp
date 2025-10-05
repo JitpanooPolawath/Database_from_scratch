@@ -7,8 +7,9 @@ void getConfig(std::vector<char> header, std::fstream* conFile, cHeader* curHead
     std::memcpy(&curHead->tempRow, header.data(), 4);
     std::memcpy(&curHead->columnCount, header.data() + 4, 1);
     std::memcpy(&curHead->totalBytes, header.data() + 5, 2);
-    std::memcpy(&curHead->colKey, header.data() + 7, 1);
+    std::memcpy(&curHead->keyBytes, header.data() + 7, 2);
 }
+
 
 
 void getHeader(std::vector<char> header, std::fstream* mainFile, pHeader* curHead ,int curAddr){
@@ -96,7 +97,7 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     std::fstream mainFile;
     std::string lFileName = fileName + "_config" +".ldf";
     std::fstream lainFile;
-    mainFile.open(mFileName, std::ios::in | std::ios::binary);
+    mainFile.open(mFileName, std::ios::in | std::ios::binary|std::ios::out);
     lainFile.open(lFileName, std::ios::in | std::ios::binary);
     if(!mainFile.is_open() || !lainFile.is_open()){
         std::cout << "File open error at insertion" << std::endl;
@@ -119,16 +120,18 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     std::vector<char> cBuffer(cHeaderSize);
     cHeader confHeader;
     getConfig(cBuffer,&lainFile,&confHeader);
+    lainFile.close();
+    std::cout<<"=== Config header ===="<<std::endl;
     std::cout<<confHeader.tempRow<<std::endl;
     std::cout<<static_cast<int>(confHeader.columnCount)<<std::endl;
     std::cout<<confHeader.totalBytes<<std::endl;
-    std::cout<<static_cast<int>(confHeader.colKey)<<std::endl;
+    std::cout<<static_cast<int>(confHeader.keyBytes)<<std::endl;
 
     const size_t pageHeader = 96;
     std::vector<char> buffer(pageHeader);
     pHeader curHead;
     getHeader(buffer, &mainFile, &curHead, theAddr);
-    std::cout<<"At address: "<< theAddr <<std::endl;
+    std::cout<<"=== Datapage header === \nAt address: "<< theAddr <<std::endl;
     std::cout<<curHead.row<<std::endl;
     std::cout<<curHead.bytesLeft<<std::endl;
     std::cout<<curHead.isFull<<std::endl;
@@ -138,29 +141,28 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     std::cout<<curHead.prevAddr<<std::endl;
     std::cout<<curHead.nextAddr<<std::endl;
 
-    mainFile.seekg(theAddr+96);
-    // mainFile.read(reinterpret_cast<char*>(&curPageVal),sizeof(curPageVal));
-    // mainFile.read(reinterpret_cast<char*>(&curPageAddr),sizeof(curPageAddr));
-    // for(int i = 0; i < curHead.row; i++){
-    //     curMin.mini = curPageVal;
-    //     curMin.addr = curPageAddr;
-    //     if(minimum < curPageVal && i != 0){
-    //         temp = traversal(mainFile,++depth,minimum,prevMin.addr);
-    //         break;
-    //     }else if(minimum < curPageVal && i == 0){
-    //         temp = traversal(mainFile,++depth,minimum,curMin.addr);
-    //         break;
-    //     }
-    //     else{
-    //         prevMin.mini = curPageVal;
-    //         prevMin.addr = curPageAddr;
-    //     }
-    //     mainFile->read(reinterpret_cast<char*>(&curPageVal),4);
-    //     mainFile->read(reinterpret_cast<char*>(&curPageAddr),4);
-    // }
-
+    bool isSmaller = false;
+    mainFile.seekg(theAddr+96+confHeader.keyBytes-4);
+    std::cout<<"=== In for loop ==="<<std::endl;
+    int count = 0;
+    for(int i = 0; i < curHead.row; i++){
+        int curKeyVal;
+        mainFile.read(reinterpret_cast<char*>(&curKeyVal),sizeof(curKeyVal));
+        std::cout<<curKeyVal<<std::endl;
+        if(minimum < curKeyVal){
+            isSmaller = true;
+            count = i;
+            break;
+        }
+        mainFile.seekg(confHeader.totalBytes);
+    }
     bool isBytesLeft = true;
-
+    if(curHead.bytesLeft - confHeader.totalBytes > 0){
+        isBytesLeft = false;
+    }
+    mainFile.seekp(theAddr+96+(count * confHeader.totalBytes),std::ios::beg);
+    mainFile.write(reinterpret_cast<const char*>(inputtedRow.data()),inputtedRow.size());
+    mainFile.close();
 
 
 }
