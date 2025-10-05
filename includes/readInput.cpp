@@ -62,8 +62,10 @@ void readInputColumn(datapage* datapageName){
     uint16_t totalBytes = 0;
     uint16_t keyBytes = 0;
     bool foundPKey = false;
+    std::cout<<"====== Set column ======"<<std::endl;
     while(1){
         char name[30] = {0};
+        std::cout<<"Current bytes used: ["<<totalBytes<<"], out of 8096. You have: "<< 8096-totalBytes <<" bytes left." << std::endl;
         std::cout<< "\n" << "Enter column name (LIMIT 30 character): ";
         std::cin >> name;
         if (std::cin.fail()) {
@@ -118,6 +120,9 @@ void readInputColumn(datapage* datapageName){
         columnCount++;
         if(stopIN.compare("n") == 0){
             break;
+        }
+        if(totalBytes > 8096){
+            std::cout<<"This row byte size exceed limit (8096 bytes)\nThe previous column was removed.\nIf you want to keep all column please try again."<<std::endl;
         }
     }
     datapageName->closeLog(false);

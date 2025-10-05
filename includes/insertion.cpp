@@ -183,15 +183,23 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
         mainFile.seekg(confHeader.totalBytes);
     }
     std::cout<<"====== Inputting rows ======"<<std::endl;
+    // Copy elements
+    uint32_t startingRowAddr = (curHead.curAddr + 96) + (count * confHeader.totalBytes);
+    uint32_t endingRowAddr = (curHead.curAddr + 96) + (curHead.row * confHeader.totalBytes);
+    uint32_t lastStartRowAddr = endingRowAddr - confHeader.totalBytes;
+    uint32_t lastEndRowAddr = endingRowAddr;
+    // Insertion
+    std::cout << startingRowAddr << " " << endingRowAddr << " " << lastStartRowAddr << " " << lastEndRowAddr<<std::endl;
     int writePos = theAddr+96+(count * confHeader.totalBytes);
     mainFile.seekp(writePos,std::fstream::beg);
     mainFile.write(reinterpret_cast<const char*>(inputtedRow.data()),inputtedRow.size());
-    std::cout<<"====== Updating datapage header ======"<<std::endl;
+    
     bool isBytesLeft = true;
     uint16_t updatedBytesLeft = curHead.bytesLeft - confHeader.totalBytes;
     if(updatedBytesLeft > 0){
         isBytesLeft = false;
     }
+    std::cout<<"====== Updating datapage header ======"<<std::endl;
     if(minimum <= curHead.minNum){
         updateHeader(&mainFile,theAddr,updatedBytesLeft,++curHead.row, minimum);
     }else{
