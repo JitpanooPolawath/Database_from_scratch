@@ -48,6 +48,8 @@ void getConfig(std::vector<char> header, std::fstream* conFile, cHeader* curHead
 
 void updateHeader(std::fstream* mainFile ,int curAddr, uint16_t updatedBytes, uint8_t rowCount, uint32_t minimum);
 
+void updateInterRow(std::fstream* mainFile,int addr, uint32_t minimum);
+
 void updateLogTimestamp(uint8_t isValue, std::fstream* logTimeFile);
 
 void updateConfig(uint32_t numRow, std::fstream* logFile);

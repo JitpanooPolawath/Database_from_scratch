@@ -44,6 +44,18 @@ void updateHeader(std::fstream* mainFile ,int curAddr, uint16_t updatedBytes, ui
     mainFile->flush();
 }
 
+void updateInterRow(std::fstream* mainFile,int addr, uint32_t minimum){
+    mainFile->seekg(addr,std::fstream::beg);
+    uint32_t tempMin;
+    mainFile->read(reinterpret_cast<char*>(&tempMin),sizeof(tempMin));
+    if(minimum < tempMin){
+        mainFile->seekp(addr,std::fstream::beg);
+        mainFile->write(reinterpret_cast<char*>(&minimum), sizeof(minimum));
+        mainFile->flush();
+    }  
+}
+
+
 void updateLogTimestamp(uint8_t isValue, std::fstream* logTimeFile){
     // isValue: 0 = insert action, 1 = update action, 2 = delete action
     logTimeFile->write(reinterpret_cast<char*>(&isValue),sizeof(uint8_t));
@@ -225,7 +237,6 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
         isBytesLeft = false;
     }
     
-    
 
     std::cout<<"====== Updating datapage header ======"<<std::endl;
     if(minimum <= curHead.minNum){
@@ -233,6 +244,7 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     }else{
         updateHeader(&mainFile,theAddr,updatedBytesLeft,++curHead.row, curHead.minNum);
     }
+    updateInterRow(&mainFile,intermediateAddr+96+(8*count),minimum);
     std::cout<<"====== Updating config & log file ======"<<std::endl;
     updateLogTimestamp(0,&lTainFile);
     updateConfig(++confHeader.tempRow, &lainFile);
