@@ -15,11 +15,11 @@ void createLogFile(std::string fileName, bool isTime){
         uint32_t tempRow = 0;
         uint8_t columnCount = 0;
         uint16_t totalBytes = 0;
-        uint8_t colKey = 0;
+        uint16_t keyBytes = 0;
         tempLogFile.write(reinterpret_cast<char*>(&tempRow),sizeof(tempRow));
         tempLogFile.write(reinterpret_cast<char*>(&columnCount),sizeof(columnCount));
         tempLogFile.write(reinterpret_cast<char*>(&totalBytes),sizeof(totalBytes));
-        tempLogFile.write(reinterpret_cast<char*>(&colKey),sizeof(colKey));
+        tempLogFile.write(reinterpret_cast<char*>(&keyBytes),sizeof(keyBytes));
         tempLogFile.close();
     }
 
@@ -276,7 +276,7 @@ void datapage::setLogFile(char* name, columnType types){
 } 
 
 // Update the number of column in the table
-void datapage::setLogColumnCount(uint8_t count, uint16_t totalbytes, uint8_t colKey){
+void datapage::setLogColumnCount(uint8_t count, uint16_t totalbytes, uint16_t keyBytes){
     logFile.open(logFileName, std::ios::binary | std::ios::out |std::ios::in);
     if (!logFile.is_open()) {
         std::cout << "Error: Log file did not open correctly" << std::endl;
@@ -285,7 +285,7 @@ void datapage::setLogColumnCount(uint8_t count, uint16_t totalbytes, uint8_t col
     logFile.seekp(sizeof(uint32_t),std::fstream::beg);
     logFile.write(reinterpret_cast<char*>(&count),sizeof(uint8_t));
     logFile.write(reinterpret_cast<char*>(&totalbytes),sizeof(totalbytes));
-    logFile.write(reinterpret_cast<char*>(&colKey),sizeof(colKey));
+    logFile.write(reinterpret_cast<char*>(&keyBytes),sizeof(keyBytes));
     logFile.close();
 }
 

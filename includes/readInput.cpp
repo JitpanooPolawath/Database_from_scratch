@@ -60,7 +60,7 @@ void readInputColumn(datapage* datapageName){
     uint8_t columnCount = 0;
     datapageName->openLog(false);
     uint16_t totalBytes = 0;
-    uint8_t colKey = 0;
+    uint16_t keyBytes = 0;
     bool foundPKey = false;
     while(1){
         char name[30] = {0};
@@ -103,7 +103,7 @@ void readInputColumn(datapage* datapageName){
             std::cin >> inKey;
             if(inKey.compare("y") == 0){
                 std::cout << "Is a primary key"<<std::endl;
-                colKey = columnCount;
+                keyBytes = totalBytes;
                 foundPKey = true;
             }else{
                 std::cout << "Not a primary key"<<std::endl;
@@ -121,7 +121,7 @@ void readInputColumn(datapage* datapageName){
         }
     }
     datapageName->closeLog(false);
-    datapageName->setLogColumnCount(columnCount, totalBytes, colKey);
+    datapageName->setLogColumnCount(columnCount, totalBytes, keyBytes);
 }
 
 
