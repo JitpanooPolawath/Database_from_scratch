@@ -125,7 +125,7 @@ void readInputColumn(datapage* datapageName){
 }
 
 
-std::vector<unsigned char> readInsertion(std::string inputFileName){
+insertionRow readInsertion(std::string inputFileName){
     std::fstream logFile;
     std::string logFileName = inputFileName + "_config" + ".ldf";
     logFile.open(logFileName, std::ios::in | std::ios::binary);
@@ -144,15 +144,17 @@ std::vector<unsigned char> readInsertion(std::string inputFileName){
     uint16_t colKey;
     logFile.read(reinterpret_cast<char*>(&colKey),sizeof(colKey));
 
-    std::cout <<"\n"<<"----- Config details -----" << std::endl; 
+    std::cout <<"\n"<<"====== Config details ======" << std::endl; 
     std::cout << "number of rows: " << numOfRow << std::endl;
     std::cout << "column count: " << static_cast<int>(columnCount) << std::endl;
     std::cout << "totalbytes: " << totalBytes << std::endl;
-    std::cout << "totalbytes: " << colKey << std::endl;
+    std::cout << "KeyBytes: " << colKey << std::endl;
 
     std::vector<unsigned char> storedBytes;
     storedBytes.reserve(totalBytes);
     std::string fullOutput;
+    uint32_t minValue = 0;
+    int toKeyBytes = 0;
     for(int i = 0; i <  static_cast<int>(columnCount); i++){
         char columnName[30];
         logFile.read(columnName, 30);
@@ -193,14 +195,18 @@ std::vector<unsigned char> readInsertion(std::string inputFileName){
                     invalidAction();
                     continue;
                 }else{
+                    toKeyBytes += 4;
                     fullOutput = fullOutput + std::to_string(inputNumber) + "|";
                     unsigned char* bytes = reinterpret_cast<unsigned char*>(&inputNumber);
                     storedBytes.insert(storedBytes.end(), bytes, bytes + sizeof(uint32_t));
+                    if(toKeyBytes == colKey){
+                        minValue = inputNumber;
+                    }
                     break;
                 }
             }else{
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                char inputBuffer[columnBytes];
+                char inputBuffer[columnBytes] = {0};
                 std::cout << "Input data: ";
                 std::cin.getline(inputBuffer, columnBytes);
                 if(std::cin.fail()){
@@ -208,7 +214,8 @@ std::vector<unsigned char> readInsertion(std::string inputFileName){
                     continue;
                 }else{
                     fullOutput = fullOutput + inputBuffer + "|";
-                    size_t length = std::strlen(inputBuffer);
+                    size_t length = columnBytes;
+                    toKeyBytes += columnBytes;
                     storedBytes.insert(
                         storedBytes.end(),
                         inputBuffer,                 
@@ -219,8 +226,11 @@ std::vector<unsigned char> readInsertion(std::string inputFileName){
             }
         }
     }
-    std::cout << "----- Inputted data -----" << std::endl;
+    std::cout << "====== Inputted data ======" << std::endl;
     std::cout << fullOutput << std::endl;
     logFile.close();
-    return storedBytes;
+    insertionRow temp;
+    temp.row = storedBytes;
+    temp.min = minValue;
+    return temp;
 }

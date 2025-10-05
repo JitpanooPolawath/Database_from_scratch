@@ -46,6 +46,11 @@ struct cHeader{
 
 void getConfig(std::vector<char> header, std::fstream* conFile, cHeader* curHead);
 
+void updateHeader(std::fstream* mainFile ,int curAddr, uint16_t updatedBytes, int rowCount, uint32_t minimum);
+
+void updateLogTimestamp(uint8_t isValue, std::fstream* logTimeFile);
+
+void updateConfig(uint32_t numRow, std::fstream* logFile);
 
 void getHeader(std::vector<char> header, std::fstream* mainFile, pHeader* curHead,int curAddr);
 /* 
@@ -54,4 +59,4 @@ datapage. Using pageheader to iterate through it.
 */
 doubleAddr traversal(std::fstream mainFile, int depth, uint32_t minimum ,int curAddr);
 
-void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int depth, int minimum, int parentAddr);
+void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int depth, uint32_t minimum, int parentAddr);

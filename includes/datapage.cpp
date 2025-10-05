@@ -271,7 +271,7 @@ void datapage::setLogFile(char* name, columnType types){
     }else{
         uint8_t temp = 0;
         logFile.write(reinterpret_cast<char*>(&types.isChar),sizeof(bool));
-        logFile.write(reinterpret_cast<char*>(&temp),sizeof(uint8_t));
+        logFile.write(reinterpret_cast<char*>(&temp),sizeof(temp));
     }
 } 
 

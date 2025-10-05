@@ -6,10 +6,17 @@
 
 struct numFile {int mode; std::string fileName;};
 
+struct insertionRow
+{
+    std::vector<unsigned char> row;
+    uint32_t min;
+};
+
+
 enum queryType {CREATE, INSERT, UPDATE, DEL, SELECT, EMP};
 
 numFile readInitialInput();
 
 void readInputColumn(datapage* datapageName);
 
-std::vector<unsigned char> readInsertion(std::string fileName);
+insertionRow readInsertion(std::string fileName);
