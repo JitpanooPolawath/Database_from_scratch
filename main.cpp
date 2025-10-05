@@ -55,7 +55,7 @@ int main(){
     }else if(queryMode.mode == 1){
         std::vector<unsigned char> inputtedRow;
         // std::vector<unsigned char> inputtedRow = readInsertion(queryMode.fileName);
-        insert(inputtedRow, queryMode.fileName, false);
+        insert(inputtedRow, queryMode.fileName, 0,3,0);
     }
     
     return 0;

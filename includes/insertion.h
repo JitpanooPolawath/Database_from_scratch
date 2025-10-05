@@ -36,11 +36,22 @@ struct minimus{
     int addr;
 };
 
+struct cHeader{
+    uint32_t tempRow;
+    uint8_t columnCount;
+    uint16_t totalBytes;
+    uint8_t colKey;
+};
+
+
+void getConfig(std::vector<char> header, std::fstream* conFile, cHeader* curHead);
+
+
 void getHeader(std::vector<char> header, std::fstream* mainFile, pHeader* curHead,int curAddr);
 /* 
 Given an fstream, it will traverse through the file to find the address of the
 datapage. Using pageheader to iterate through it.
 */
-doubleAddr traversal(std::fstream mainFile, bool useCurrentMin, uint32_t minimum ,int curAddr);
+doubleAddr traversal(std::fstream mainFile, int depth, uint32_t minimum ,int curAddr);
 
-void insert(std::vector<unsigned char> inputtedRow, std::string fileName ,bool useCurrentMin);
+void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int depth, int minimum, int parentAddr);
