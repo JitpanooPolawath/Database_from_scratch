@@ -57,6 +57,6 @@ void getHeader(std::vector<char> header, std::fstream* mainFile, pHeader* curHea
 Given an fstream, it will traverse through the file to find the address of the
 datapage. Using pageheader to iterate through it.
 */
-doubleAddr traversal(std::fstream* mainFile, int depth, uint32_t minimum ,int curAddr);
+doubleAddr traversal(std::fstream* mainFile, int depth, uint32_t minimum ,int curAddr, int* parentAddr);
 
 void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int depth, uint32_t minimum, int parentAddr);

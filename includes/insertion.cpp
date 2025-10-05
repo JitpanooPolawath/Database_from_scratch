@@ -20,7 +20,6 @@ void getConfig(std::vector<char> header, std::fstream* conFile, cHeader* curHead
     std::memcpy(&curHead->columnCount, header.data() + 4, 1);
     std::memcpy(&curHead->totalBytes, header.data() + 5, 2);
     std::memcpy(&curHead->keyBytes, header.data() + 7, 2);
-    std::cout<<curHead->keyBytes<<std::endl;
 }
 
 void getHeader(std::vector<char> header, std::fstream* mainFile, pHeader* curHead ,int curAddr){
@@ -61,7 +60,7 @@ void updateConfig(uint32_t numRow, std::fstream* logFile){
 }
 
 // Traverse through the root and intermediate page to get datapage
-doubleAddr traversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr){
+doubleAddr traversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr, int* parentAddr){
     const size_t pageHeader = 96;
     std::vector<char> buffer(pageHeader);
     pHeader curHead;
@@ -103,10 +102,16 @@ doubleAddr traversal(std::fstream* mainFile,int depth, uint32_t minimum, int cur
         curMin.mini = curPageVal;
         curMin.addr = curPageAddr;
         if(minimum < curPageVal && i != 0){
-            temp = traversal(mainFile,++depth,minimum,prevMin.addr);
+            if(depth == 1){
+                *parentAddr = curAddr;
+            }
+            temp = traversal(mainFile,++depth,minimum,prevMin.addr, parentAddr);
             break;
         }else if(minimum < curPageVal && i == 0){
-            temp = traversal(mainFile,++depth,minimum,curMin.addr);
+            if(depth == 1){
+                *parentAddr = curAddr;
+            }
+            temp = traversal(mainFile,++depth,minimum,curMin.addr, parentAddr);
             break;
         }
         else{
@@ -122,7 +127,6 @@ doubleAddr traversal(std::fstream* mainFile,int depth, uint32_t minimum, int cur
         // std::cout<<static_cast<uint32_t>(prevMin.addr)<<std::endl;
         // std::cout<<"===========" << std::endl;
     }
-
     return temp;
 }
 
@@ -142,7 +146,8 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     }
     // Traverse through the pages to get the datapage that minimum is > but < next value
     doubleAddr bothAddr;
-    bothAddr = traversal(&mainFile, depth, minimum,parentAddr);
+    int intermediateAddr; 
+    bothAddr = traversal(&mainFile, depth, minimum,parentAddr, &intermediateAddr);
 
     // For loop to check if minimum is less than row address
     int theAddr = -1;
@@ -165,6 +170,7 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     std::vector<char> buffer(pageHeader);
     pHeader curHead;
     getHeader(buffer, &mainFile, &curHead, theAddr);
+    std::cout << "====== Intermediate address ======\n" << intermediateAddr <<std::endl;
     std::cout<<"====== Datapage header ====== \nAt address: "<< theAddr <<std::endl;
     std::cout<<static_cast<int>(curHead.row)<<std::endl;
     std::cout<<curHead.bytesLeft<<std::endl;
