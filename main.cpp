@@ -21,7 +21,6 @@ bool pathExists(const char* path) {
 }
 
 int main(){
-
     // Reading input user
     numFile queryMode = readInitialInput(false);
     while(1){

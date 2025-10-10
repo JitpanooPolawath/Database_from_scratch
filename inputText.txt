@@ -1,0 +1,7 @@
+mode
+INSERT
+test
+Hello Filename
+150
+This is testing the file
+EXIT

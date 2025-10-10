@@ -50,6 +50,7 @@ numFile readInitialInput(bool isLoop){
             case SELECT:
                 return {4, input};
             case EMP:
+                std::cout <<"Exiting query command"<<std::endl; 
                 exit(0);
             default:
                 invalidAction();
