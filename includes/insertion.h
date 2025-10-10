@@ -44,7 +44,7 @@ struct cHeader{
 };
 
 
-std::vector<char> copyRowBytes(std::fstream* mainFile, int lastStartingAddr, int lastEndingRowAddr);
+std::vector<char> copyRowBytes(std::fstream* mainFile, int lastStartingAddr, int lastEndingRowAddr, uint16_t totalBytes);
 
 void copyBytes(std::fstream* mainFile, int startingRowAddr, int endingRowAddr, int toAddr) ;
 

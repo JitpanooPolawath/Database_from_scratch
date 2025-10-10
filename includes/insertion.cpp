@@ -149,9 +149,10 @@ void createDataPage(std::fstream* mainFile, std::string fileName){
     mainFile->close();
 }
 
-std::vector<char> copyRowBytes(std::fstream* mainFile, int lastStartingAddr, int lastEndingRowAddr){
-    int bytesToCopy = lastStartingAddr - lastEndingRowAddr;    
+std::vector<char> copyRowBytes(std::fstream* mainFile, int lastStartingAddr, int lastEndingRowAddr, uint16_t totalBytes){
+    int bytesToCopy = lastEndingRowAddr - lastStartingAddr;    
     std::vector<char> buffer(bytesToCopy);
+    buffer.reserve(totalBytes);
     mainFile->seekg(lastStartingAddr, std::fstream::beg);
     mainFile->read(buffer.data(), bytesToCopy);
     return buffer;
@@ -293,7 +294,7 @@ void linearInsert(std::vector<char> lastElementRow, std::string fileName, std::f
     uint32_t endingRowAddr = (curHead.curAddr + 96) + (curHead.row * totalBytes);
     uint32_t lastStartRowAddr = endingRowAddr - totalBytes;
     uint32_t lastEndRowAddr = endingRowAddr;
-    std::vector<char> lastTempRow = copyRowBytes(mainFile, lastStartRowAddr, lastEndRowAddr);
+    std::vector<char> lastTempRow = copyRowBytes(mainFile, lastStartRowAddr, lastEndRowAddr, totalBytes);
     bool skipCopy = false;
     if(count == curHead.row){
         skipCopy = true;
@@ -461,7 +462,7 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     uint32_t endingRowAddr = (curHead.curAddr + 96) + (curHead.row * confHeader.totalBytes);
     uint32_t lastStartRowAddr = endingRowAddr - confHeader.totalBytes;
     uint32_t lastEndRowAddr = endingRowAddr;
-    std::vector<char> lastElementRow = copyRowBytes(&mainFile, lastStartRowAddr, lastEndRowAddr);
+    std::vector<char> lastElementRow = copyRowBytes(&mainFile, lastStartRowAddr, lastEndRowAddr, confHeader.totalBytes);
     // Insertion
     bool skipCopy = false;
     if(count == curHead.row){
@@ -496,10 +497,10 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     lTainFile.close();
 
     // Linear insertion. Inserting into the next datapage
-    if(!isBytesLeft){
-        linearInsert(lastElementRow, fileName,&mainFile, curHead.curID, 
-            interHead.row, interHead.curID, curHead.nextAddr, 
-            confHeader.totalBytes, confHeader.keyBytes);
-    }
+    // if(!isBytesLeft){
+    //     linearInsert(lastElementRow, fileName,&mainFile, curHead.curID, 
+    //         interHead.row, interHead.curID, curHead.nextAddr, 
+    //         confHeader.totalBytes, confHeader.keyBytes);
+    // }
 
 }
