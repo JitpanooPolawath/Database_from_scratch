@@ -65,7 +65,7 @@ void readInputColumn(datapage* datapageName){
     while(1){
         char name[30] = {0};
         std::cout<<"====== Set column ======"<<std::endl;
-        std::cout<<"Current bytes used: ["<<totalBytes<<"], out of 8096. You have: "<< 8096-totalBytes <<" bytes left." << std::endl;
+        std::cout<<"Current bytes used: ["<<totalBytes<<"], out of 8095. You have: "<< 8095-totalBytes <<" bytes left." << std::endl;
         std::cout<< "\n" << "Enter column name (LIMIT 30 character): ";
         std::cin >> name;
         if (std::cin.fail()) {
@@ -126,7 +126,7 @@ void readInputColumn(datapage* datapageName){
         }
     }
     datapageName->closeLog(false);
-    datapageName->setLogColumnCount(columnCount, totalBytes, keyBytes);
+    datapageName->setLogColumnCount(columnCount, totalBytes+1, keyBytes);
 }
 
 
@@ -152,7 +152,7 @@ insertionRow readInsertion(std::string inputFileName){
     std::cout <<"\n"<<"====== Config details ======" << std::endl; 
     std::cout << "number of rows: " << numOfRow << std::endl;
     std::cout << "column count: " << static_cast<int>(columnCount) << std::endl;
-    std::cout << "totalbytes: " << totalBytes << std::endl;
+    std::cout << "totalbytes: " << totalBytes-1 << std::endl;
     std::cout << "KeyBytes: " << colKey << std::endl;
 
     std::vector<unsigned char> storedBytes;

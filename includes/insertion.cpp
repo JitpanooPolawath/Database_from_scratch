@@ -416,7 +416,7 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     std::cout<<"====== Config header ======"<<std::endl;
     std::cout<<"current number of row: "<<confHeader.tempRow<<std::endl;
     std::cout<<"number of column in table: "<<static_cast<int>(confHeader.columnCount)<<std::endl;
-    std::cout<<"maximum row size(bytes): "<<confHeader.totalBytes<<std::endl;
+    std::cout<<"maximum row size(bytes): "<<confHeader.totalBytes-1<<std::endl;
     std::cout<<"location of primary key: "<<static_cast<int>(confHeader.keyBytes)<<std::endl;
 
     std::cout << "====== Intermediate address ======\n" <<"intermediate address: "<<intermediateAddr <<std::endl;
