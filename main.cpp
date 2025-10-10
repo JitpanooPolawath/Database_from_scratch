@@ -6,11 +6,9 @@
 #include "includes/readInput.h"
 #include "includes/insertion.h"
 
-
-void createTable(datapage* filePage){
-
+void createTable(datapage* filePage, isReadFile readingFile){
         filePage->createRoot();
-        readInputColumn(filePage);
+        readInputColumn(filePage, readingFile);
         filePage->createIntermediate();
         filePage->createDataPage();
 
@@ -22,7 +20,7 @@ bool pathExists(const char* path) {
 
 int main(){
     // Reading input user
-    numFile queryMode = readInitialInput(false);
+    numFile queryMode = readInitialInput(false, "");
 
     if(queryMode.mode == -2){
         std::string readFileName;
@@ -36,8 +34,33 @@ int main(){
         }
         // Doing the command again
         std::string line;
-        while(std::getline(readFile,line)){
-            std::cout<<line<<std::endl;
+        std::getline(readFile,line);
+        if(line.compare("mode") == 0){
+            while(std::getline(readFile,line)){
+                queryMode = readInitialInput(true,line);
+                std::string fileName = queryMode.fileName + ".mdf";
+                if(pathExists(fileName.c_str()) && queryMode.mode == 0){
+                    std::string logFileName = queryMode.fileName + "_config" + ".ldf";
+                    std::string logTimeName = queryMode.fileName + "_log" + ".ldf";
+                    std::cout << "Deleting original file" << std::endl;
+                    std::remove(fileName.c_str());
+                    std::remove(logFileName.c_str());
+                    std::remove(logTimeName.c_str());
+                }
+                datapage filePage(queryMode.fileName);
+                if (queryMode.mode == 0){
+                    isReadFile readingFile;
+                    readingFile.isRead = true;
+                    readingFile.readFile = &readFile;
+                    createTable(&filePage, readingFile);
+                }else if(queryMode.mode == 1){
+                    // std::vector<unsigned char> inputtedRow;
+                    insertionRow inputtedRow = readInsertion(queryMode.fileName);
+                    insert(inputtedRow.row, queryMode.fileName, 0,inputtedRow.min,0);
+                }
+            }
+        }else{
+            return 0;
         }
     }else{
         while(1){
@@ -52,13 +75,15 @@ int main(){
             }
             datapage filePage(queryMode.fileName);
             if (queryMode.mode == 0){
-                createTable(&filePage);
+                isReadFile readingFile;
+                readingFile.isRead = false;
+                createTable(&filePage, readingFile);
             }else if(queryMode.mode == 1){
                 // std::vector<unsigned char> inputtedRow;
                 insertionRow inputtedRow = readInsertion(queryMode.fileName);
                 insert(inputtedRow.row, queryMode.fileName, 0,inputtedRow.min,0);
             }
-            queryMode = readInitialInput(true);
+            queryMode = readInitialInput(true, "");
         }
     }
     return 0;

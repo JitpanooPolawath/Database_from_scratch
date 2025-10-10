@@ -18,7 +18,7 @@ enum queryType convertString(std::string str) {
     }
 }
 
-numFile readInitialInput(bool isLoop){
+numFile readInitialInput(bool isLoop, std::string modeType){
     std::string input;
     std::cout << "\n====== Start your Query ======" << std::endl;
     while(1){
@@ -29,13 +29,28 @@ numFile readInitialInput(bool isLoop){
         }      
         if(input.compare("--help") == 0){
             std::cout <<"In help section - work in progress"<<std::endl;
-        }else if(input.compare("mode") == 0 || isLoop){
-            std::cout << "Pick a mode: CREATE, INSERT, UPDATE, DEL, SELECT, EXIT: ";
-            std::cin >> input;
-            queryType queryMode = convertString(input);
-            if(queryMode != EMP){
-                std::cout << "Table name: ";
+        }else if((input.compare("mode") == 0 || isLoop) ){
+            if(modeType.length() < 1){
+                std::cout << "Pick a mode: CREATE, INSERT, UPDATE, DEL, SELECT, EXIT: ";
                 std::cin >> input;
+            }
+            queryType queryMode;
+            if(modeType.compare("") == 0){
+               queryMode = convertString(input);
+               if(queryMode != EMP){
+                    std::cout << "Table name: ";
+                    std::cin >> input;
+                }
+            }else{
+                std::vector <std::string> tokens;
+                std::stringstream check1(modeType);
+                std::string intermediate;
+                while(getline(check1, intermediate, ' '))
+                {
+                    tokens.push_back(intermediate);
+                }
+                queryMode = convertString(tokens[0]);
+                input = tokens[1];
             }
             switch (queryMode)
             {
@@ -69,78 +84,117 @@ numFile readInitialInput(bool isLoop){
 }
 
 // Read user inputs, then while loop getting user inputs 
-void readInputColumn(datapage* datapageName){
+void readInputColumn(datapage* datapageName, isReadFile readingFile){
     // example case
     uint8_t columnCount = 0;
     datapageName->openLog(false);
     uint16_t totalBytes = 0;
     uint16_t keyBytes = 0;
     bool foundPKey = false;
-    while(1){
-        char name[30] = {0};
-        std::cout<<"====== Set column ======"<<std::endl;
-        std::cout<<"Current bytes used: ["<<totalBytes<<"], out of 8095. You have: "<< 8095-totalBytes <<" bytes left." << std::endl;
-        std::cout<< "\n" << "Enter column name (LIMIT 30 character): ";
-        std::cin >> name;
-        if (std::cin.fail()) {
-            invalidAction();
-            continue;
+    if(readingFile.isRead){
+        std::string line;
+        while(std::getline(*readingFile.readFile,line)){
+            if(line.empty()){
+                return;
+            }
+            std::vector <std::string> tokens;
+            std::stringstream check1(line);
+            std::string intermediate;
+            while(getline(check1, intermediate, '('))
+            {
+                tokens.push_back(intermediate);
+            }
+            columnType types;
+            if(tokens[1].compare("char") == 0){
+                types.isChar = true;
+                std::string number_string = tokens[2].substr(0, tokens[2].length() - 2);
+                int temp_length = std::stoi(number_string);
+                totalBytes += temp_length;
+                types.charLength = temp_length;
+            }
+            else{
+                types.isChar = false;
+                totalBytes += 4;
+                types.charLength = 0;
+                if(tokens.size() == 3){
+                    keyBytes = totalBytes;
+                }
+                
+            }
+            char name[30] = {0};
+            columnCount++;
+            strcpy(name, tokens[0].c_str());
+            datapageName->setLogFile(name, types);
         }
-        if(std::strlen(name) > 30){
-            invalidAction();
-            continue;
-        }
-        columnType types;
-        char* typeIn = new char[4];
-        std::cout << "Type char or int: ";
-        std::cin >> typeIn;
-        if(std::strlen(typeIn) == 4){
-            int temp_length = 0; // 1. Read into a standard int
-            std::cout << "Input char size (limit 100): ";
-            std::cin >> temp_length;
-            if(temp_length >= 100 || temp_length <= 0){
+        datapageName->closeLog(false);
+        datapageName->setLogColumnCount(columnCount, totalBytes+1, keyBytes);
+    }else{
+        while(1){
+            char name[30] = {0};
+            std::cout<<"====== Set column ======"<<std::endl;
+            std::cout<<"Current bytes used: ["<<totalBytes<<"], out of 8095. You have: "<< 8095-totalBytes <<" bytes left." << std::endl;
+            std::cout<< "\n" << "Enter column name (LIMIT 30 character): ";
+            std::cin >> name;
+            if (std::cin.fail()) {
                 invalidAction();
                 continue;
             }
-            totalBytes += temp_length;
-            types.charLength = temp_length;
-            types.isChar = true;
-        }else if(std::strlen(typeIn) == 3){
-            types.charLength = 0;
-            types.isChar = false;
-            totalBytes += 4;
-        }else{
-            invalidAction();
-            continue;
-        }
-        if(foundPKey == false && std::strlen(typeIn) == 3){
-            std::string inKey;
-            std::cout << "Is this column a primary key?(Only one primary key) [y] or [n]: ";
-            std::cin >> inKey;
-            if(inKey.compare("y") == 0){
-                std::cout << "Is a primary key"<<std::endl;
-                keyBytes = totalBytes;
-                foundPKey = true;
+            if(std::strlen(name) > 30){
+                invalidAction();
+                continue;
+            }
+            columnType types;
+            char* typeIn = new char[4];
+            std::cout << "Type char or int: ";
+            std::cin >> typeIn;
+            if(std::strlen(typeIn) == 4){
+                int temp_length = 0; // 1. Read into a standard int
+                std::cout << "Input char size (limit 100): ";
+                std::cin >> temp_length;
+                if(temp_length >= 100 || temp_length <= 0){
+                    invalidAction();
+                    continue;
+                }
+                totalBytes += temp_length;
+                types.charLength = temp_length;
+                types.isChar = true;
+            }else if(std::strlen(typeIn) == 3){
+                types.charLength = 0;
+                types.isChar = false;
+                totalBytes += 4;
             }else{
-                std::cout << "Not a primary key"<<std::endl;
+                invalidAction();
+                continue;
+            }
+            if(foundPKey == false && std::strlen(typeIn) == 3){
+                std::string inKey;
+                std::cout << "Is this column a primary key?(Only one primary key) [y] or [n]: ";
+                std::cin >> inKey;
+                if(inKey.compare("y") == 0){
+                    std::cout << "Is a primary key"<<std::endl;
+                    keyBytes = totalBytes;
+                    foundPKey = true;
+                }else{
+                    std::cout << "Not a primary key"<<std::endl;
+                }
+            }
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::string stopIN;
+            std::cout << "Type [y] to add more column OR [n] to complete: ";
+            std::cin >> stopIN;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            datapageName->setLogFile(name, types);
+            columnCount++;
+            if(stopIN.compare("n") == 0){
+                break;
+            }
+            if(totalBytes > 8096){
+                std::cout<<"This row byte size exceed limit (8096 bytes)\nThe previous column was removed.\nIf you want to keep all column please try again."<<std::endl;
             }
         }
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::string stopIN;
-        std::cout << "Type [y] to add more column OR [n] to complete: ";
-        std::cin >> stopIN;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        datapageName->setLogFile(name, types);
-        columnCount++;
-        if(stopIN.compare("n") == 0){
-            break;
-        }
-        if(totalBytes > 8096){
-            std::cout<<"This row byte size exceed limit (8096 bytes)\nThe previous column was removed.\nIf you want to keep all column please try again."<<std::endl;
-        }
+        datapageName->closeLog(false);
+        datapageName->setLogColumnCount(columnCount, totalBytes+1, keyBytes);
     }
-    datapageName->closeLog(false);
-    datapageName->setLogColumnCount(columnCount, totalBytes+1, keyBytes);
 }
 
 
