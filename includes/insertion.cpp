@@ -187,7 +187,7 @@ void getHeader(std::vector<char> header, std::fstream* mainFile, pHeader* curHea
     std::memcpy(&curHead->isFull, header.data() + 3, 1);
     std::memcpy(&curHead->curAddr, header.data() + 4, 4);
     std::memcpy(&curHead->minNum, header.data() + 8, 4);
-    std::memcpy(&curHead->curID, header.data() + 12, 1);
+    curHead->curID = header[12];
     std::memcpy(&curHead->prevAddr, header.data() + 13, 4);
     std::memcpy(&curHead->nextAddr, header.data() + 17, 4);
 }
@@ -497,10 +497,10 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     lTainFile.close();
 
     // Linear insertion. Inserting into the next datapage
-    // if(!isBytesLeft){
-    //     linearInsert(lastElementRow, fileName,&mainFile, curHead.curID, 
-    //         interHead.row, interHead.curID, curHead.nextAddr, 
-    //         confHeader.totalBytes, confHeader.keyBytes);
-    // }
+    if(!isBytesLeft){
+        linearInsert(lastElementRow, mFileName,&mainFile, curHead.curID, 
+            interHead.row, interHead.curID, curHead.nextAddr, 
+            confHeader.totalBytes, confHeader.keyBytes);
+    }
 
 }
