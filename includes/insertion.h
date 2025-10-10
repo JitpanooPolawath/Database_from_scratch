@@ -44,6 +44,10 @@ struct cHeader{
 };
 
 
+std::vector<char> copyRowBytes(std::fstream* mainFile, int lastStartingAddr, int lastEndingRowAddr);
+
+void copyBytes(std::fstream* mainFile, int startingRowAddr, int endingRowAddr, int toAddr) ;
+
 void getConfig(std::vector<char> header, std::fstream* conFile, cHeader* curHead);
 
 void updateHeader(std::fstream* mainFile ,int curAddr, uint16_t updatedBytes, uint8_t rowCount, uint32_t minimum, bool isInter);
@@ -59,6 +63,9 @@ void getHeader(std::vector<char> header, std::fstream* mainFile, pHeader* curHea
 Given an fstream, it will traverse through the file to find the address of the
 datapage. Using pageheader to iterate through it.
 */
+void linearInsert(std::vector<char> lastElementRow, std::string fileName, std::fstream* mainFile, int prevID, uint8_t interRow, 
+    int interID, uint32_t curAddr, uint16_t totalBytes, uint16_t keyByte);
+
 doubleAddr traversal(std::fstream* mainFile, int depth, uint32_t minimum ,int curAddr, int* parentAddr);
 
 void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int depth, uint32_t minimum, int parentAddr);

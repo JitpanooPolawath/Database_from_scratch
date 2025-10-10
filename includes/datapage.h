@@ -30,7 +30,6 @@ private:
 
     // data rows
     char dataRows[8096] = {0};
-
     std::string fileName;
     std::string logFileName;
     std::fstream datapageFile;

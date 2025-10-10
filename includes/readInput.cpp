@@ -156,7 +156,7 @@ insertionRow readInsertion(std::string inputFileName){
     std::cout << "KeyBytes: " << colKey << std::endl;
 
     std::vector<unsigned char> storedBytes;
-    storedBytes.reserve(totalBytes);
+    storedBytes.reserve(totalBytes + 1);
     std::string fullOutput;
     uint32_t minValue = 0;
     int toKeyBytes = 0;
