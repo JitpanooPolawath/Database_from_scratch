@@ -15,7 +15,7 @@ struct insertionRow
 
 enum queryType {CREATE, INSERT, UPDATE, DEL, SELECT, EMP};
 
-numFile readInitialInput();
+numFile readInitialInput(bool isLoop);
 
 void readInputColumn(datapage* datapageName);
 

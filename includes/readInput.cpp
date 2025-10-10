@@ -18,20 +18,25 @@ enum queryType convertString(std::string str) {
     }
 }
 
-numFile readInitialInput(){
+numFile readInitialInput(bool isLoop){
     std::string input;
+    std::cout << "\n====== Start your Query ======" << std::endl;
     while(1){
-        std::cout << "Type [mode] or type [--help] for more information: ";
-        std::cin >> input;
-        std::cout << "Your input: " << input << std::endl;
+        if(!isLoop){
+            std::cout << "Type [mode], [--help], or [exit]: ";
+            std::cin >> input;
+            std::cout << "Your input: " << input << std::endl;
+        }      
         if(input.compare("--help") == 0){
             std::cout <<"In help section - work in progress"<<std::endl;
-        }else if(input.compare("mode") == 0){
-            std::cout << "Pick a mode: CREATE, INSERT, UPDATE, DEL, SELECT: ";
+        }else if(input.compare("mode") == 0 || isLoop){
+            std::cout << "Pick a mode: CREATE, INSERT, UPDATE, DEL, SELECT, EXIT: ";
             std::cin >> input;
             queryType queryMode = convertString(input);
-            std::cout << "Table name: ";
-            std::cin >> input;
+            if(queryMode != EMP){
+                std::cout << "Table name: ";
+                std::cin >> input;
+            }
             switch (queryMode)
             {
             case CREATE :
@@ -44,9 +49,14 @@ numFile readInitialInput(){
                 return {3, input};
             case SELECT:
                 return {4, input};
+            case EMP:
+                exit(0);
             default:
                 invalidAction();
             }
+        }else if(input.compare("exit") == 0){
+            std::cout <<"Exiting query command"<<std::endl;
+            exit(0);
         }else{
             invalidAction();
         }
