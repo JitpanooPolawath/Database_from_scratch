@@ -23,7 +23,7 @@ numFile readInitialInput(bool isLoop){
     std::cout << "\n====== Start your Query ======" << std::endl;
     while(1){
         if(!isLoop){
-            std::cout << "Type [mode], [--help], or [exit]: ";
+            std::cout << "Type [mode], [file], [--help], or [exit]: ";
             std::cin >> input;
             std::cout << "Your input: " << input << std::endl;
         }      
@@ -58,6 +58,9 @@ numFile readInitialInput(bool isLoop){
         }else if(input.compare("exit") == 0){
             std::cout <<"Exiting query command"<<std::endl;
             exit(0);
+        }else if(input.compare("file") == 0){
+            std::cout <<"In file reading mode"<<std::endl;
+            return {-2, ""};
         }else{
             invalidAction();
         }
