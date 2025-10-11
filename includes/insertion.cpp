@@ -462,7 +462,6 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     uint32_t endingRowAddr = (curHead.curAddr + 96) + (curHead.row * confHeader.totalBytes);
     uint32_t lastStartRowAddr = endingRowAddr - confHeader.totalBytes;
     uint32_t lastEndRowAddr = endingRowAddr;
-    std::vector<char> lastElementRow = copyRowBytes(&mainFile, lastStartRowAddr, lastEndRowAddr, confHeader.totalBytes);
     // Insertion
     bool skipCopy = false;
     if(count == curHead.row){
@@ -477,9 +476,14 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     mainFile.write(reinterpret_cast<const char*>(inputtedRow.data()),inputtedRow.size());
     bool isBytesLeft = true;
     int updatedBytesLeft = curHead.bytesLeft - confHeader.totalBytes;
+    std::vector<char> lastElementRow = copyRowBytes(&mainFile, lastStartRowAddr, lastEndRowAddr, confHeader.totalBytes);
     if(updatedBytesLeft < 0){
         isBytesLeft = false; 
+        if(skipCopy){
+            std::vector<char> lastElementRow(inputtedRow.begin(), inputtedRow.end());
+        }
     }
+
     std::cout<<"====== Updating datapage header ======"<<std::endl;
     if(isBytesLeft){
         updateHeader(&mainFile,theAddr,updatedBytesLeft,++curHead.row, minimum, false);
