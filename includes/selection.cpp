@@ -1,13 +1,18 @@
 #include "selection.h"
 
-void seTraversal(std::vector<operValue>* clauses, std::vector<int>* columns, std::fstream* mainFile, 
-    std::fstream* configFile, int keyColumn, bool isAllCol, bool isAllWhere){
+void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, std::fstream* mainFile, 
+    std::fstream* configFile, int keyColumn, bool isAllWhere){
     const size_t pageHeader = 96;
     const size_t cHeaderSize = 9;
     std::vector<char> cBuffer(cHeaderSize);
     cHeader confHeader;
     configFile->seekg(0,std::ios::beg);
     getConfig(cBuffer,configFile,&confHeader);
+    std::cout<<"====== Outputting Rows ======"<<std::endl;
+    for(int i = 0; i < static_cast<int>(columns.size()); i++){
+        std::cout<< columns[i].strComp <<"|";
+    }
+    std::cout<<std::endl;
     if(isAllWhere){
         int curAddr = 8192+8192;
         uint32_t count = 0;
@@ -16,9 +21,22 @@ void seTraversal(std::vector<operValue>* clauses, std::vector<int>* columns, std
             std::vector<char> bufferP(pageHeader);
             pHeader curHead;
             getHeader(bufferP, mainFile, &curHead, curAddr);
-            mainFile->seekg(curAddr+96,std::ios::beg);
             for(int i = 0; i<curHead.row;i++){
-
+                mainFile->seekg(curAddr+96+(confHeader.totalBytes*i), std::ios::beg);
+                for(int j = 0; j < static_cast<int>(columns.size()); j++){
+                    std::vector<char> rowBuffer(columns[j].size);
+                    mainFile->read(rowBuffer.data(), rowBuffer.size());
+                    if(columns[j].isChar){
+                        std::string output(rowBuffer.data(), columns[j].size);
+                        std::cout << output << "|";
+                    }else{
+                        int output;
+                        std::memcpy(&output, rowBuffer.data(), sizeof(int));
+                        std::cout <<output << "|";
+                    }
+                    
+                }
+                std::cout<<std::endl;
                 count++;
             }
             if(count == confHeader.tempRow){
@@ -65,35 +83,58 @@ void selection(std::string fileName){
     // Selecting which column to show
     std::cout << "====== Select column ======" << std::endl; 
     int countBytes = 0;
-    bool isAllCol = true;
     bool isAllWhere = true;
     std::cout <<"Select all columns [y] or specific [n]: ";
     std::string stopIN;
     std::cin >> stopIN;
-    std::vector<int> columnArr;
+    std::vector<colValue> columnArr;
     columnArr.reserve(columnCount);
-    if(stopIN.compare("n")== 0){
-        for(int i = 0; i <  static_cast<int>(columnCount); i++){
-            char columnName[30];
-            bool isChar;
-            uint8_t columnBytes;
-            logFile.read(columnName, 30);
-            logFile.read(reinterpret_cast<char*>(&isChar),sizeof(isChar));
-            logFile.read(reinterpret_cast<char*>(&columnBytes),1);
-            countBytes += columnBytes;   
-            std::cout <<"Do you want to select [" << columnName <<"], [y] or [n]: ";
-            std::cin >> stopIN;
-            if(stopIN.compare("y")== 0){
-                isAllCol = false;
-                if(countBytes == 0){
-                    columnArr.push_back(4);
-                }else{
-                    columnArr.push_back(countBytes);
-                }
-            }else{
-                columnArr.push_back(-1);
-            }
+    uint8_t prev = 0;
+    logFile.seekg(9,std::ios::beg);
+    for(int i = 0; i <  static_cast<int>(columnCount); i++){
+        char columnName[30];
+        bool isChar;
+        uint8_t columnBytes;
+        logFile.read(columnName, 30);
+        logFile.read(reinterpret_cast<char*>(&isChar),sizeof(isChar));
+        logFile.read(reinterpret_cast<char*>(&columnBytes),1);
+        if(columnBytes == static_cast<uint8_t>(0)){
+            countBytes += 4;
+        }else{
+            countBytes += columnBytes;
         }
+        std::string colIN = "n";
+        if(stopIN.compare("n") == 0){
+            std::cout <<"Do you want to select [" << columnName <<"], [y] or [n]: ";
+            std::cin >> colIN;
+        }else{
+            colValue temp;
+            temp.strComp = columnName;
+            if(isChar){
+                temp.size = columnBytes;
+            }else{
+                temp.size = 4;
+            } 
+            temp.prevAddr = prev;
+            temp.curAddr = countBytes;
+            temp.isChar = isChar;
+            columnArr.push_back(temp);
+        }
+        if(colIN.compare("y")== 0){
+            colValue temp;
+            temp.strComp = columnName;
+            temp.curAddr = countBytes;
+            temp.prevAddr = prev;
+            if(isChar){
+                temp.size = columnBytes;
+            }else{
+                temp.size = 4;
+            } 
+            temp.isChar = isChar;
+            columnArr.push_back(temp);
+        }
+        prev = countBytes;
+
     }
 
     // where clause
@@ -158,11 +199,11 @@ void selection(std::string fileName){
     }
 
     if(isAllWhere){
-        seTraversal(&opArr,&columnArr,&mainFile,&logFile,keyColumn,isAllCol,isAllWhere);
+        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere);
     }
 
 
-    for(int k = 0; k < static_cast<int>(columnCount); k++){
-        std::cout << columnArr[k] <<"==="<< opArr[k].operType<<std::endl; 
-    }
+    // for(int k = 0; k < static_cast<int>(columnCount); k++){
+    //     std::cout << columnArr[k].strComp <<"==="<< opArr[k].operType<<std::endl; 
+    // }
 }

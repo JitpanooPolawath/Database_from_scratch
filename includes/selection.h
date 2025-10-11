@@ -19,9 +19,12 @@ struct operValue{
 struct colValue{
     uint8_t size;
     std::string strComp;
+    uint8_t prevAddr;
+    uint8_t curAddr;
+    bool isChar;
 };
 
-void seTraversal(std::vector<operValue>* clauses, std::vector<int>* columns, std::fstream* mainFile, 
-    std::fstream* configFile, int keyColumn, bool isAllCol, bool isAllWhere);
+void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, std::fstream* mainFile, 
+    std::fstream* configFile, int keyColumn, bool isAllWhere);
 
 void selection(std::string fileName);
