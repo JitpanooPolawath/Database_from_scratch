@@ -1,6 +1,24 @@
 #include "selection.h"
 
 
+
+int convertOperator(std::string str) {
+    if (str.compare("==") == 0) return 0;
+    else if (str.compare("!=") == 0) return 1;
+    else if (str.compare("<") == 0) return 2;
+    else if (str.compare(">") == 0) return 3;
+    else if (str.compare("<=") == 0) return 4;
+    else if (str.compare(">=") == 0) return 5;
+    else if (str.compare("!<") == 0) return 6;
+    else if (str.compare("!>") == 0) return 7;
+    else if (str.compare("!<=") == 0) return 8;
+    else if (str.compare("!>=") == 0) return 9;
+    else{
+        return -1;
+    }
+}
+
+
 int reTraversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr, int* parentAddr, int oper){
     const size_t pageHeader = 96;
     std::vector<char> buffer(pageHeader);
@@ -9,7 +27,6 @@ int reTraversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr,
 
     // Address less than current 
     int reAddress;
-    std::cout<< "At depth["<<depth<<"], address: " <<  curHead.curAddr <<std::endl;
     if(depth >= 2){
         return curHead.curAddr;
     }
@@ -275,8 +292,13 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
     configFile->seekg(0,std::ios::beg);
     getConfig(cBuffer,configFile,&confHeader);
     std::cout<<"====== Outputting Rows ======"<<std::endl;
+    std::cout<<"Column Name: ";
     for(int i = 0; i < static_cast<int>(columns.size()); i++){
-        std::cout<< columns[i].strComp <<"|";
+        if(columns[i].isShow){
+            std::cout<< columns[i].strComp <<"|";
+        }else if(isAllCol){
+            std::cout<< columns[i].strComp <<"|";
+        }
     }
     std::cout<<std::endl;
     if(isAllWhere){
@@ -304,7 +326,6 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
         
     }else{
         // Root + intermediate
-        std::cout<<"====== Searching for rows ======"<<std::endl;
         int startingAddr = 8192+8192;
         int parentAddr = 0;
         if(keyColumn != -1){
@@ -312,7 +333,6 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
             int operationType = clauses[keyColumn].operType;
             startingAddr = reTraversal(mainFile,0,minimum,0,&parentAddr,operationType);
         }
-        std::cout<<startingAddr<<std::endl;
         const size_t pageHeader = 96;
         uint32_t count = 0;
         int pageCount = 0;
@@ -373,132 +393,247 @@ void selection(std::string fileName, isReadFile readingFile){
     std::cout << "====== Select column ======" << std::endl; 
     int countBytes = 0;
     bool isAllWhere = true;
-
-    // if(readingFile.isRead){
-    //     std::string line;
-    //     while(std::getline(*readingFile.readFile,line)){
-    //         if()
-    //     }
-    // }else{
-
-    // }
-
-
-    std::cout <<"Select all columns [y] or specific [n]: ";
-    std::string stopIN;
-    std::cin >> stopIN;
     std::vector<colValue> columnArr;
     columnArr.reserve(columnCount);
     uint8_t prev = 0;
     logFile.seekg(9,std::ios::beg);
     bool isAllCol = true;
-    for(int i = 0; i <  static_cast<int>(columnCount); i++){
-        char columnName[30];
-        bool isChar;
-        uint8_t columnBytes;
-        logFile.read(columnName, 30);
-        logFile.read(reinterpret_cast<char*>(&isChar),sizeof(isChar));
-        logFile.read(reinterpret_cast<char*>(&columnBytes),1);
-        if(columnBytes == static_cast<uint8_t>(0)){
-            countBytes += 4;
-        }else{
-            countBytes += columnBytes;
-        }
-        std::string colIN = "n";
-        colValue temp;
-        temp.strComp = columnName;
-        temp.isShow = false;
-        if(stopIN.compare("n") == 0){
-            std::cout <<"Do you want to select [" << columnName <<"], [y] or [n]: ";
-            std::cin >> colIN;
-            isAllCol = false;
-            if(colIN.compare("y")== 0){
-                temp.isShow = true;
-            }
-        }
-        if(isChar){
-            temp.size = columnBytes;
-        }else{
-            temp.size = 4;
-        } 
-        temp.prevAddr = prev;
-        temp.curAddr = countBytes;
-        temp.isChar = isChar;
-        columnArr.push_back(temp);
-        prev = countBytes;
-
-    }
-
-    // where clause
     int keyColumn = -1;
     int curBytes = 0;
-    std::cout << "====== Where column ======" << std::endl; 
-    logFile.seekg(9,std::ios::beg);
-    std::cout <<"Select all columns [y] or specific [n]: ";
-    std::cin >> stopIN;
-    int whereCount = 0;
-    if(stopIN.compare("n") == 0){
-        for(int j = 0; j <  static_cast<int>(columnCount); j++){
+
+    if(readingFile.isRead){
+        std::string line;
+        std::getline(*readingFile.readFile,line);
+        bool isAllStar = false;
+        std::vector <std::string> tokens;
+        if(line.compare("*") == 0){
+            isAllStar = true;
+        }else{
+            std::stringstream check1(line);
+            std::string intermediate;
+            while(getline(check1, intermediate, ','))
+            {
+                tokens.push_back(intermediate);
+            }
+        }
+        for(int iF = 0; iF <  static_cast<int>(columnCount); iF++){
             char columnName[30];
             bool isChar;
             uint8_t columnBytes;
             logFile.read(columnName, 30);
             logFile.read(reinterpret_cast<char*>(&isChar),sizeof(isChar));
             logFile.read(reinterpret_cast<char*>(&columnBytes),1);
-            if(columnBytes == 0){
-                curBytes += 4;
+            if(columnBytes == static_cast<uint8_t>(0)){
+                countBytes += 4;
             }else{
-                curBytes += columnBytes;
+                countBytes += columnBytes;
             }
-            std::string result = isChar ? "Yes" : "No";
-            std::string primary = "NOT PRIMARY";
-            if(curBytes == colKey){
-                primary = "PRIMARY";
-            }
-            std::cout <<"Do you want to select [" << columnName <<"][ Is char: " << result <<"]["<<primary<<"], [y] or [n]: ";
-            std::cin >> stopIN;
-            operValue temp; 
-            if(stopIN.compare("y")== 0){
-                std::cout <<"Pick an operation [=,0],[!=,1],[<,2][>,3][<=,4][>=,5][!<,6][!>,7][!<=,8][!>=,9]: ";
-                int oper;
-                std::cin >> oper;
-                if(std::cin.fail() || (oper > 10 || oper < 0)){
-                    std::cout << "Failed to pick correct where clause, will skip this column." << std::endl; 
-                    temp.operType= -1;
-                    opArr.push_back(temp);
-                }else{
-                    isAllWhere = false;
-                    if(isChar){
-                        std::string inputVal;
-                        std::cout << "Input condition value: ";
-                        std::cin >> inputVal; 
-                        temp.strComp = inputVal;
-                        temp.numComp = -1;
-                        temp.isChar = true;
-
-                    }else{
-                        int inputVal;
-                        std::cout << "Input condition value: ";
-                        std::cin >> inputVal; 
-                        temp.numComp = inputVal;
-                        temp.strComp = "";
-                        temp.isChar = false;
-                        if(curBytes == colKey){
-                            keyColumn = whereCount;
-                        }
+            colValue temp;
+            temp.strComp = columnName;
+            temp.isShow = false;
+            if(!isAllStar){
+                for(int j = 0; j<static_cast<int>(tokens.size()); j++ ){
+                    if(tokens[j].compare(columnName) == 0){
+                        isAllCol = false;
+                        temp.isShow = true;
                     }
-                    whereCount++;
-                    temp.operType = oper;
-                    opArr.push_back(temp);
                 }
+            }
+            if(isChar){
+                temp.size = columnBytes;
             }else{
+                temp.size = 4;
+            } 
+            temp.prevAddr = prev;
+            temp.curAddr = countBytes;
+            temp.isChar = isChar;
+            columnArr.push_back(temp);
+            prev = countBytes;
+
+        }
+        logFile.seekg(9,std::ios::beg);
+        std::getline(*readingFile.readFile,line);
+        if(line.empty()){
+            isAllWhere = true;
+            for(int j = 0; j <  static_cast<int>(columnCount); j++){
+                operValue temp; 
                 temp.operType = -1;
                 opArr.push_back(temp);
             }
-        }
-    }
+        }else if(line.compare("WHERE") == 0){
+            isAllWhere = false;
+            std::getline(*readingFile.readFile,line);
+            std::vector <std::string> tokensWhereBig;
+            std::stringstream check1(line);
+            std::string intermediate;
+            while(getline(check1, intermediate, ','))
+            {
+                tokensWhereBig.push_back(intermediate);
+            }
+            for(int j = 0; j <  static_cast<int>(columnCount); j++){
+                char columnName[30];
+                bool isChar;
+                uint8_t columnBytes;
+                int whereCount = 0;
+                logFile.read(columnName, 30);
+                logFile.read(reinterpret_cast<char*>(&isChar),sizeof(isChar));
+                logFile.read(reinterpret_cast<char*>(&columnBytes),1);
+                if(columnBytes == 0){
+                    curBytes += 4;
+                }else{
+                    curBytes += columnBytes;
+                }
+                operValue temp; 
+                bool isFoundInToken = false;
+                for(int jW = 0; jW < static_cast<int>(tokensWhereBig.size()); jW++){
+                    std::vector <std::string> tokensWhereSmall;
+                    std::stringstream check2(line);
+                    std::string intermediate2;
+                    while(getline(check2, intermediate2, ' '))
+                    {
+                        tokensWhereSmall.push_back(intermediate2);
+                    }
+                    if(tokensWhereSmall[0].compare(columnName) == 0){
+                        isAllWhere = false;
+                        isFoundInToken = true;
+                        if(isChar){
+                            std::string inputVal = tokensWhereSmall[2];
+                            temp.strComp = inputVal;
+                            temp.numComp = -1;
+                            temp.isChar = true;
 
-    seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol);
+                        }else{
+                            temp.numComp = std::stoi(tokensWhereSmall[2]);
+                            temp.strComp = "";
+                            temp.isChar = false;
+                            if(curBytes == colKey){
+                                keyColumn = whereCount;
+                            }
+                        }
+                        whereCount++;
+                        int convertedOp = convertOperator(tokensWhereSmall[1]);
+                        temp.operType = convertedOp;
+                        opArr.push_back(temp);
+                    }
+                }
+                if(!isFoundInToken){
+                    temp.operType = -1;
+                    opArr.push_back(temp);
+                }
+            }
+        }else{
+            std::cout<<"ERROR WHERE Clause format. Please check if you have typed the WHERE" << std::endl;
+            exit(0);
+        }
+        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol);
+    }else{
+        std::cout <<"Select all columns [y] or specific [n]: ";
+        std::string stopIN;
+        std::cin >> stopIN;
+        for(int i = 0; i <  static_cast<int>(columnCount); i++){
+            char columnName[30];
+            bool isChar;
+            uint8_t columnBytes;
+            logFile.read(columnName, 30);
+            logFile.read(reinterpret_cast<char*>(&isChar),sizeof(isChar));
+            logFile.read(reinterpret_cast<char*>(&columnBytes),1);
+            if(columnBytes == static_cast<uint8_t>(0)){
+                countBytes += 4;
+            }else{
+                countBytes += columnBytes;
+            }
+            std::string colIN = "n";
+            colValue temp;
+            temp.strComp = columnName;
+            temp.isShow = false;
+            if(stopIN.compare("n") == 0){
+                std::cout <<"Do you want to select [" << columnName <<"], [y] or [n]: ";
+                std::cin >> colIN;
+                isAllCol = false;
+                if(colIN.compare("y")== 0){
+                    temp.isShow = true;
+                }
+            }
+            if(isChar){
+                temp.size = columnBytes;
+            }else{
+                temp.size = 4;
+            } 
+            temp.prevAddr = prev;
+            temp.curAddr = countBytes;
+            temp.isChar = isChar;
+            columnArr.push_back(temp);
+            prev = countBytes;
+
+        }
+        // where clause
+        std::cout << "====== Where column ======" << std::endl; 
+        logFile.seekg(9,std::ios::beg);
+        std::cout <<"Select all columns [y] or specific [n]: ";
+        std::cin >> stopIN;
+        int whereCount = 0;
+        if(stopIN.compare("n") == 0){
+            for(int j = 0; j <  static_cast<int>(columnCount); j++){
+                char columnName[30];
+                bool isChar;
+                uint8_t columnBytes;
+                logFile.read(columnName, 30);
+                logFile.read(reinterpret_cast<char*>(&isChar),sizeof(isChar));
+                logFile.read(reinterpret_cast<char*>(&columnBytes),1);
+                if(columnBytes == 0){
+                    curBytes += 4;
+                }else{
+                    curBytes += columnBytes;
+                }
+                std::string result = isChar ? "Yes" : "No";
+                std::string primary = "NOT PRIMARY";
+                if(curBytes == colKey){
+                    primary = "PRIMARY";
+                }
+                std::cout <<"Do you want to select [" << columnName <<"][ Is char: " << result <<"]["<<primary<<"], [y] or [n]: ";
+                std::cin >> stopIN;
+                operValue temp; 
+                if(stopIN.compare("y")== 0){
+                    std::cout <<"Pick an operation [=,0],[!=,1],[<,2][>,3][<=,4][>=,5][!<,6][!>,7][!<=,8][!>=,9]: ";
+                    int oper;
+                    std::cin >> oper;
+                    if(std::cin.fail() || (oper > 10 || oper < 0)){
+                        std::cout << "Failed to pick correct where clause, will skip this column." << std::endl; 
+                        temp.operType= -1;
+                        opArr.push_back(temp);
+                    }else{
+                        isAllWhere = false;
+                        if(isChar){
+                            std::string inputVal;
+                            std::cout << "Input condition value: ";
+                            std::cin >> inputVal; 
+                            temp.strComp = inputVal;
+                            temp.numComp = -1;
+                            temp.isChar = true;
+
+                        }else{
+                            int inputVal;
+                            std::cout << "Input condition value: ";
+                            std::cin >> inputVal; 
+                            temp.numComp = inputVal;
+                            temp.strComp = "";
+                            temp.isChar = false;
+                            if(curBytes == colKey){
+                                keyColumn = whereCount;
+                            }
+                        }
+                        whereCount++;
+                        temp.operType = oper;
+                        opArr.push_back(temp);
+                    }
+                }else{
+                    temp.operType = -1;
+                    opArr.push_back(temp);
+                }
+            }
+        }
+        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol);
+    }
 
     mainFile.close();
     logFile.close();
