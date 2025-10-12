@@ -38,6 +38,9 @@ int main(){
         std::getline(readFile,line);
         if(line.compare("mode") == 0){
             while(std::getline(readFile,line)){
+                if(line.empty()){
+                    continue;
+                }
                 queryMode = readInitialInput(true,line);
                 std::string fileName = queryMode.fileName + ".mdf";
                 if(pathExists(fileName.c_str()) && queryMode.mode == 0){
