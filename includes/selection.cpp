@@ -110,11 +110,11 @@ int reTraversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr,
 
 void outputRow(std::fstream* mainFile, std::vector<colValue> columns, std::vector<operValue> clauses, bool isAllWhere){
     std::string finalOutput = "";
+    bool isRow = false;
     for(int j = 0; j < static_cast<int>(columns.size()); j++){
         std::vector<char> rowBuffer(columns[j].size);
         mainFile->read(rowBuffer.data(), rowBuffer.size());
         int integerOutput = 0;
-        bool isSkipRow = false;
         std::string output(rowBuffer.data(), columns[j].size);
         if(columns[j].isChar){
             finalOutput = finalOutput + output +"|";
@@ -122,37 +122,126 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns, std::vecto
             std::memcpy(&integerOutput, rowBuffer.data(), sizeof(int));
             finalOutput = finalOutput + std::to_string(integerOutput) +"|";;
         }
-        if(!isAllWhere){    
+        if(!isAllWhere){       
             switch(clauses[j].operType){
                 case 0:
-                if(clauses[j].strComp.compare(output) || clauses[j].numComp == integerOutput){
-
-                }
-                break;
+                    if(clauses[j].isChar){
+                        if(clauses[j].strComp.compare(output) == 0){
+                            isRow = true;
+                        }
+                    }else{
+                        if(clauses[j].numComp == integerOutput){
+                            isRow = true;
+                        }
+                    }
+                    break;
                 case 1:
-                break;
+                    if(clauses[j].isChar){
+                        if(clauses[j].strComp.compare(output) != 0){
+                            isRow = true;
+                        }
+                    }else{
+                        if(clauses[j].numComp != integerOutput){
+                            isRow = true;
+                        }
+                    }
+                    break;
                 case 2:
-                break;
+                    if(clauses[j].isChar){
+                        if(clauses[j].strComp > output){
+                            isRow = true;
+                        }
+                    }else{
+                        if(clauses[j].numComp > integerOutput){
+                            isRow = true;
+                        }
+                    }
+                    break;
                 case 3:
-                break;
+                    if(clauses[j].isChar){
+                        if(clauses[j].strComp < output){
+                            isRow = true;
+                        }
+                    }else{
+                        if(clauses[j].numComp < integerOutput){
+                            isRow = true;
+                        }
+                    }
+                    break;
                 case 4:
-                break;
+                    if(clauses[j].isChar){
+                        if(clauses[j].strComp >= output){
+                            isRow = true;
+                        }
+                    }else{
+                        if(clauses[j].numComp >= integerOutput){
+                            isRow = true;
+                        }
+                    }
+                    break;
                 case 5:
-                break;
+                    if(clauses[j].isChar){
+                        if(clauses[j].strComp <= output){
+                            isRow = true;
+                        }
+                    }else{
+                        if(clauses[j].numComp <= integerOutput){
+                            isRow = true;
+                        }
+                    }
+                    break;
                 case 6:
-                break;
+                    if(clauses[j].isChar){
+                        if(clauses[j].strComp <= output){
+                            isRow = true;
+                        }
+                    }else{
+                        if(clauses[j].numComp <= integerOutput){
+                            isRow = true;
+                        }
+                    }
+                    break;
                 case 7:
-                break;
+                    if(clauses[j].isChar){
+                        if(clauses[j].strComp >= output){
+                            isRow = true;
+                        }
+                    }else{
+                        if(clauses[j].numComp >= integerOutput){
+                            isRow = true;
+                        }
+                    }
+                    break;
                 case 8:
-                break;
+                    if(clauses[j].isChar){
+                        if(clauses[j].strComp < output){
+                            isRow = true;
+                        }
+                    }else{
+                        if(clauses[j].numComp < integerOutput){
+                            isRow = true;
+                        }
+                    }
+                    break;
                 case 9:
-                break;
+                    if(clauses[j].isChar){
+                        if(clauses[j].strComp > output){
+                            isRow = true;
+                        }
+                    }else{
+                        if(clauses[j].numComp > integerOutput){
+                            isRow = true;
+                        }
+                    }
+                    break;
                 default:
-                break;
+                    break;
             }
         }
     }
-    std::cout << finalOutput << std::endl;   
+    if(isRow){
+        std::cout << finalOutput << std::endl; 
+    }
 }
 
 
@@ -213,7 +302,7 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
             getHeader(bufferP, mainFile, &curHead, startingAddr);
             for(int i = 0; i<curHead.row;i++){
                 mainFile->seekg(startingAddr+96+(confHeader.totalBytes*i), std::ios::beg);
-                outputRow(mainFile, columns, clauses, true);
+                outputRow(mainFile, columns, clauses, isAllWhere);
                 count++;
             }
             if(count == confHeader.tempRow){
