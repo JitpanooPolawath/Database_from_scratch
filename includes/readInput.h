@@ -23,4 +23,4 @@ numFile readInitialInput(bool isLoop, std::string modeType);
 
 void readInputColumn(datapage* datapageName, isReadFile readingFile);
 
-insertionRow readInsertion(std::string fileName);
+insertionRow readInsertion(std::string fileName, bool isFile, std::string readLine);
