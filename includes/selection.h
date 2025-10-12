@@ -19,6 +19,7 @@ struct operValue{
     bool isChar;
 };
 struct colValue{
+    bool isShow;
     uint8_t size;
     std::string strComp;
     uint8_t prevAddr;
@@ -29,6 +30,6 @@ struct colValue{
 int reTraversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr, int* parentAddr, int oper);
 
 void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, std::fstream* mainFile, 
-    std::fstream* configFile, int keyColumn, bool isAllWhere);
+    std::fstream* configFile, int keyColumn, bool isAllWhere, bool isAllCol);
 
-void selection(std::string fileName);
+void selection(std::string fileName, isReadFile readingFile);

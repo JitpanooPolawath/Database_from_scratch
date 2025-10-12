@@ -108,7 +108,8 @@ int reTraversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr,
 }
 
 
-void outputRow(std::fstream* mainFile, std::vector<colValue> columns, std::vector<operValue> clauses, bool isAllWhere){
+void outputRow(std::fstream* mainFile, std::vector<colValue> columns, 
+    std::vector<operValue> clauses, bool isAllWhere, bool isAllCol){
     std::string finalOutput = "";
     bool isRow = false;
     for(int j = 0; j < static_cast<int>(columns.size()); j++){
@@ -117,10 +118,27 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns, std::vecto
         int integerOutput = 0;
         std::string output(rowBuffer.data(), columns[j].size);
         if(columns[j].isChar){
-            finalOutput = finalOutput + output +"|";
+            if(isAllCol){
+                finalOutput = finalOutput + output +"|";
+            }else{
+                if(columns[j].isShow){
+                    finalOutput = finalOutput + output +"|";
+                }else{
+                    finalOutput = finalOutput + "";
+                }
+            }
+            
         }else{
             std::memcpy(&integerOutput, rowBuffer.data(), sizeof(int));
-            finalOutput = finalOutput + std::to_string(integerOutput) +"|";;
+            if(isAllCol){
+                finalOutput = finalOutput + std::to_string(integerOutput) +"|";;
+            }else{
+                if(columns[j].isShow){
+                    finalOutput = finalOutput + std::to_string(integerOutput) +"|";;
+                }else{
+                    finalOutput = finalOutput + "";
+                }
+            }
         }
         if(!isAllWhere){       
             switch(clauses[j].operType){
@@ -235,8 +253,11 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns, std::vecto
                     }
                     break;
                 default:
+                    isRow = false;
                     break;
             }
+        }else{
+            isRow = true;
         }
     }
     if(isRow){
@@ -246,7 +267,7 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns, std::vecto
 
 
 void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, std::fstream* mainFile, 
-    std::fstream* configFile, int keyColumn, bool isAllWhere){
+    std::fstream* configFile, int keyColumn, bool isAllWhere, bool isAllCol){
     const size_t pageHeader = 96;
     const size_t cHeaderSize = 9;
     std::vector<char> cBuffer(cHeaderSize);
@@ -268,8 +289,7 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
             getHeader(bufferP, mainFile, &curHead, curAddr);
             for(int i = 0; i<curHead.row;i++){
                 mainFile->seekg(curAddr+96+(confHeader.totalBytes*i), std::ios::beg);
-                outputRow(mainFile, columns, clauses, isAllWhere);
-                std::cout<<std::endl;
+                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol);
                 count++;
             }
             if(count == confHeader.tempRow){
@@ -302,7 +322,7 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
             getHeader(bufferP, mainFile, &curHead, startingAddr);
             for(int i = 0; i<curHead.row;i++){
                 mainFile->seekg(startingAddr+96+(confHeader.totalBytes*i), std::ios::beg);
-                outputRow(mainFile, columns, clauses, isAllWhere);
+                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol);
                 count++;
             }
             if(count == confHeader.tempRow){
@@ -319,7 +339,7 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
 
 }
 
-void selection(std::string fileName){
+void selection(std::string fileName, isReadFile readingFile){
     std::string mFileName = fileName + ".mdf";
     std::fstream mainFile;
     std::string lFileName = fileName + "_config" +".ldf";
@@ -353,6 +373,17 @@ void selection(std::string fileName){
     std::cout << "====== Select column ======" << std::endl; 
     int countBytes = 0;
     bool isAllWhere = true;
+
+    // if(readingFile.isRead){
+    //     std::string line;
+    //     while(std::getline(*readingFile.readFile,line)){
+    //         if()
+    //     }
+    // }else{
+
+    // }
+
+
     std::cout <<"Select all columns [y] or specific [n]: ";
     std::string stopIN;
     std::cin >> stopIN;
@@ -360,6 +391,7 @@ void selection(std::string fileName){
     columnArr.reserve(columnCount);
     uint8_t prev = 0;
     logFile.seekg(9,std::ios::beg);
+    bool isAllCol = true;
     for(int i = 0; i <  static_cast<int>(columnCount); i++){
         char columnName[30];
         bool isChar;
@@ -373,35 +405,26 @@ void selection(std::string fileName){
             countBytes += columnBytes;
         }
         std::string colIN = "n";
+        colValue temp;
+        temp.strComp = columnName;
+        temp.isShow = false;
         if(stopIN.compare("n") == 0){
             std::cout <<"Do you want to select [" << columnName <<"], [y] or [n]: ";
             std::cin >> colIN;
+            isAllCol = false;
+            if(colIN.compare("y")== 0){
+                temp.isShow = true;
+            }
+        }
+        if(isChar){
+            temp.size = columnBytes;
         }else{
-            colValue temp;
-            temp.strComp = columnName;
-            if(isChar){
-                temp.size = columnBytes;
-            }else{
-                temp.size = 4;
-            } 
-            temp.prevAddr = prev;
-            temp.curAddr = countBytes;
-            temp.isChar = isChar;
-            columnArr.push_back(temp);
-        }
-        if(colIN.compare("y")== 0){
-            colValue temp;
-            temp.strComp = columnName;
-            temp.curAddr = countBytes;
-            temp.prevAddr = prev;
-            if(isChar){
-                temp.size = columnBytes;
-            }else{
-                temp.size = 4;
-            } 
-            temp.isChar = isChar;
-            columnArr.push_back(temp);
-        }
+            temp.size = 4;
+        } 
+        temp.prevAddr = prev;
+        temp.curAddr = countBytes;
+        temp.isChar = isChar;
+        columnArr.push_back(temp);
         prev = countBytes;
 
     }
@@ -475,7 +498,7 @@ void selection(std::string fileName){
         }
     }
 
-    seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere);
+    seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol);
 
     mainFile.close();
     logFile.close();

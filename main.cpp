@@ -65,7 +65,10 @@ int main(){
                         insert(inputtedRow.row, queryMode.fileName, 0,inputtedRow.min,0);
                     }
                 }else if(queryMode.mode == 4){
-                    selection(queryMode.fileName);
+                    isReadFile readingFile;
+                    readingFile.isRead = true;
+                    readingFile.readFile = &readFile;
+                    selection(queryMode.fileName, readingFile);
                 }
             }
         }else{
@@ -86,13 +89,17 @@ int main(){
             if (queryMode.mode == 0){
                 isReadFile readingFile;
                 readingFile.isRead = false;
+                readingFile.readFile = nullptr;
                 createTable(&filePage, readingFile);
             }else if(queryMode.mode == 1){
                 // std::vector<unsigned char> inputtedRow;
                 insertionRow inputtedRow = readInsertion(queryMode.fileName, false, "");
                 insert(inputtedRow.row, queryMode.fileName, 0,inputtedRow.min,0);
             }else if(queryMode.mode == 4){
-                selection(queryMode.fileName);
+                isReadFile readingFile;
+                readingFile.isRead = false;
+                readingFile.readFile = nullptr;
+                selection(queryMode.fileName, readingFile);
             }
             queryMode = readInitialInput(true, "");
         }
