@@ -70,6 +70,7 @@ int main(){
                     readingFile.readFile = &readFile;
                     selection(queryMode.fileName, readingFile);
                 }
+                std::cout << "\n" << std::endl;
             }
         }else{
             return 0;

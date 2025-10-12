@@ -268,7 +268,7 @@ insertionRow readInsertion(std::string inputFileName,  bool isFile, std::string 
                     }
                     fullOutput = fullOutput + tokens[i] + "|";
                     unsigned char inputArray[columnBytes] = {0};
-                    std::memcpy(inputArray, tokens[i].c_str(), tokens[i].length()-1);
+                    std::memcpy(inputArray, tokens[i].c_str(), tokens[i].length());
                     size_t length = columnBytes;
                     toKeyBytes += columnBytes;
                     storedBytes.insert(
