@@ -48,8 +48,8 @@ int main(){
                     std::remove(logFileName.c_str());
                     std::remove(logTimeName.c_str());
                 }
-                datapage filePage(queryMode.fileName);
                 if (queryMode.mode == 0){
+                    datapage filePage(queryMode.fileName);
                     isReadFile readingFile;
                     readingFile.isRead = true;
                     readingFile.readFile = &readFile;
@@ -57,9 +57,13 @@ int main(){
                 }else if(queryMode.mode == 1){
                     // std::vector<unsigned char> inputtedRow;
                     std::string fileInRow;
-                    getline(readFile,fileInRow);
-                    insertionRow inputtedRow = readInsertion(queryMode.fileName, true, fileInRow);
-                    insert(inputtedRow.row, queryMode.fileName, 0,inputtedRow.min,0);
+                    while(getline(readFile,fileInRow)){
+                        if(fileInRow.empty()){
+                            break;
+                        }
+                        insertionRow inputtedRow = readInsertion(queryMode.fileName, true, fileInRow);
+                        insert(inputtedRow.row, queryMode.fileName, 0,inputtedRow.min,0);
+                    }
                 }else if(queryMode.mode == 4){
                     selection(queryMode.fileName);
                 }

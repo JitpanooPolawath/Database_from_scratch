@@ -95,7 +95,7 @@ void readInputColumn(datapage* datapageName, isReadFile readingFile){
         std::string line;
         while(std::getline(*readingFile.readFile,line)){
             if(line.empty()){
-                return;
+                break;
             }
             std::vector <std::string> tokens;
             std::stringstream check1(line);
