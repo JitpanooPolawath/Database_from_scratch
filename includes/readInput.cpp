@@ -11,7 +11,7 @@ enum queryType convertString(std::string str) {
     if (str.compare("CREATE") == 0) return CREATE;
     else if (str.compare("INSERT") == 0) return INSERT;
     else if (str.compare("UPDATE") == 0) return UPDATE;
-    else if (str.compare("DEL") == 0) return DEL;
+    else if (str.compare("DELETE") == 0) return DELETE;
     else if (str.compare("SELECT") == 0) return SELECT;
     else{
         return EMP;
@@ -31,7 +31,7 @@ numFile readInitialInput(bool isLoop, std::string modeType){
             std::cout <<"In help section - work in progress"<<std::endl;
         }else if((input.compare("mode") == 0 || isLoop) ){
             if(modeType.length() < 1){
-                std::cout << "Pick a mode: CREATE, INSERT, UPDATE, DEL, SELECT, EXIT: ";
+                std::cout << "Pick a mode: CREATE, INSERT, UPDATE, DELETE, SELECT, EXIT: ";
                 std::cin >> input;
             }
             queryType queryMode;
@@ -60,7 +60,7 @@ numFile readInitialInput(bool isLoop, std::string modeType){
                 return {1, input};
             case UPDATE :
                 return {2, input};
-            case DEL :
+            case DELETE :
                 return {3, input};
             case SELECT:
                 return {4, input};

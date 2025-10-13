@@ -17,7 +17,7 @@ struct insertionRow
 
 struct isReadFile{ bool isRead; std::fstream* readFile;};
 
-enum queryType {CREATE, INSERT, UPDATE, DEL, SELECT, EMP};
+enum queryType {CREATE, INSERT, UPDATE, DELETE, SELECT, EMP};
 
 numFile readInitialInput(bool isLoop, std::string modeType);
 
