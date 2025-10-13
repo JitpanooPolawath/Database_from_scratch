@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 #include "insertion.h"
 #include "readInput.h"
 
@@ -28,6 +29,10 @@ struct colValue{
     uint8_t curAddr;
     bool isChar;
 };
+
+int convertOperator(std::string str);
+
+std::vector<std::string> tokenize(const std::string& str);
 
 int reTraversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr, int* parentAddr, int oper);
 

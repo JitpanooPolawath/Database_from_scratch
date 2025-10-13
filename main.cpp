@@ -73,6 +73,11 @@ int main(){
                     readingFile.isRead = true;
                     readingFile.readFile = &readFile;
                     selection(queryMode.fileName, readingFile);
+                }else if(queryMode.mode == 2){
+                    isReadFile readingFile;
+                    readingFile.isRead = true;
+                    readingFile.readFile = &readFile;
+                    updateRow(queryMode.fileName, readingFile);
                 }
                 std::cout << "\n" << std::endl;
             }

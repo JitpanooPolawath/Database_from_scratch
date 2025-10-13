@@ -19,6 +19,37 @@ int convertOperator(std::string str) {
 }
 
 
+std::vector<std::string> tokenize(const std::string& str) {
+    std::vector<std::string> tokens;
+    std::string current;
+    bool inQuotes = false;
+    
+    for (size_t i = 0; i < str.length(); i++) {
+        char c = str[i];
+        
+        if (c == '"') {
+            inQuotes = !inQuotes;
+            // Don't include the quote marks themselves
+        }
+        else if (c == ' ' && !inQuotes) {
+            if (!current.empty()) {
+                tokens.push_back(current);
+                current.clear();
+            }
+        }
+        else {
+            current += c;
+        }
+    }
+    
+    if (!current.empty()) {
+        tokens.push_back(current);
+    }
+    
+    return tokens;
+}
+
+
 int reTraversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr, int* parentAddr, int oper){
     const size_t pageHeader = 96;
     std::vector<char> buffer(pageHeader);
@@ -157,6 +188,7 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns,
                 }
             }
         }
+        std::cout<<"ALLWHERE: "<<isAllWhere<<" opera: "<<clauses[j].operType<<" ISROW: "<<isRow <<" Column: "<<columns[j].strComp<<std::endl;
         if(!isAllWhere){       
             switch(clauses[j].operType){
                 case 0:
@@ -503,13 +535,7 @@ void selection(std::string fileName, isReadFile readingFile){
                 operValue temp; 
                 bool isFoundInToken = false;
                 for(int jW = 0; jW < static_cast<int>(tokensWhereBig.size()); jW++){
-                    std::vector <std::string> tokensWhereSmall;
-                    std::stringstream check2(line);
-                    std::string intermediate2;
-                    while(getline(check2, intermediate2, ' '))
-                    {
-                        tokensWhereSmall.push_back(intermediate2);
-                    }
+                    std::vector <std::string> tokensWhereSmall = tokenize(tokensWhereBig[jW]);
                     if(tokensWhereSmall[0].compare(columnName) == 0){
                         isAllWhere = false;
                         isFoundInToken = true;
