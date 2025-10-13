@@ -270,7 +270,6 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns,
                     }
                     break;
                 default:
-                    isRow = false;
                     break;
             }
         }else{
