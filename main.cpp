@@ -77,7 +77,7 @@ int main(){
                     isReadFile readingFile;
                     readingFile.isRead = true;
                     readingFile.readFile = &readFile;
-                    updateRow(queryMode.fileName, readingFile);
+                    updateRow(queryMode.fileName, readingFile, false);
                 }
                 std::cout << "\n" << std::endl;
             }
@@ -113,13 +113,13 @@ int main(){
                 isReadFile readingFile;
                 readingFile.isRead = false;
                 readingFile.readFile = nullptr;
-                updateRow(queryMode.fileName, readingFile);
+                updateRow(queryMode.fileName, readingFile, false);
             }
             else if(queryMode.mode == 3){
                 isReadFile readingFile;
                 readingFile.isRead = false;
                 readingFile.readFile = nullptr;
-                updateRow(queryMode.fileName, readingFile);
+                updateRow(queryMode.fileName, readingFile, true);
             }
             queryMode = readInitialInput(true, "");
         }

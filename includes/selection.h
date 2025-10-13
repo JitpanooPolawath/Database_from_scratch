@@ -37,6 +37,6 @@ std::vector<std::string> tokenize(const std::string& str);
 int reTraversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr, int* parentAddr, int oper);
 
 void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, std::fstream* mainFile, 
-    std::fstream* configFile, int keyColumn, bool isAllWhere, bool isAllCol, bool isUpdate);
+    std::fstream* configFile, int keyColumn, bool isAllWhere, bool isAllCol, bool isUpdate, bool isDelete);
 
 void selection(std::string fileName, isReadFile readingFile);

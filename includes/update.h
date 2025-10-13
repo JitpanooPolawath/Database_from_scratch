@@ -6,4 +6,4 @@
 
 
 
-void updateRow(std::string fileName, isReadFile readingFile);
+void updateRow(std::string fileName, isReadFile readingFile, bool isDelete);

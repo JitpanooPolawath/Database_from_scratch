@@ -2,7 +2,7 @@
 
 
 
-void updateRow(std::string fileName, isReadFile readingFile){
+void updateRow(std::string fileName, isReadFile readingFile, bool isDelete){
     std::string mFileName = fileName + ".mdf";
     std::fstream mainFile;
     std::string lFileName = fileName + "_config" +".ldf";
@@ -160,7 +160,7 @@ void updateRow(std::string fileName, isReadFile readingFile){
             std::cout << "ERROR: no where clause in update query, need where clause." <<std::endl;
             exit(0);
         }
-        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, true);
+        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, true, false);
     }else{
         for(int i = 0; i <  static_cast<int>(columnCount); i++){
             char columnName[30];
@@ -179,28 +179,31 @@ void updateRow(std::string fileName, isReadFile readingFile){
             temp.strComp = columnName;
             temp.isShow = false;
             bool isPrim = true;
-            if(colKey != countBytes){
+            if(!isDelete){
+                if(colKey != countBytes){
                 std::cout <<"Do you want to select [" << columnName <<"], [y] or [n]: ";
                 std::cin >> colIN;
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 isPrim = false;
+                }
+                isAllCol = false;
+                if(colIN.compare("y")== 0 && !isPrim){
+                    if(isChar){
+                        std::string updateString;
+                        std::cout <<"Input string value: ";
+                        std::getline(std::cin,updateString);
+                        std::cout<<updateString<<std::endl;
+                        temp.strValue = updateString;
+                    }else{
+                        int updateInt;
+                        std::cout <<"Input integer value: ";
+                        std::cin >> updateInt;
+                        temp.intValue = updateInt;
+                    } 
+                    temp.isShow = true;
+                }
             }
-            isAllCol = false;
-            if(colIN.compare("y")== 0 && !isPrim){
-                if(isChar){
-                    std::string updateString;
-                    std::cout <<"Input string value: ";
-                    std::getline(std::cin,updateString);
-                    std::cout<<updateString<<std::endl;
-                    temp.strValue = updateString;
-                }else{
-                    int updateInt;
-                    std::cout <<"Input integer value: ";
-                    std::cin >> updateInt;
-                    temp.intValue = updateInt;
-                } 
-                temp.isShow = true;
-            }
+            
             if(isChar){
                 temp.size = columnBytes;
             }else{
@@ -274,7 +277,12 @@ void updateRow(std::string fileName, isReadFile readingFile){
                 opArr.push_back(temp);
             }
         }
-        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, true);
+        if(!isDelete){
+            seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, true, false);
+        }else{
+            seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, false, true);
+        }
+        
     }
     updateLogTimestamp(1,&lTainFile);
     mainFile.close();

@@ -157,7 +157,8 @@ int reTraversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr,
 
 
 void outputRow(std::fstream* mainFile, std::vector<colValue> columns, 
-    std::vector<operValue> clauses, bool isAllWhere, bool isAllCol, bool isUpdate, int curAddr){
+    std::vector<operValue> clauses, bool isAllWhere, bool isAllCol, bool isUpdate,
+    int curAddr, bool isDelete, uint32_t totalBytes){
     std::string finalOutput = "";
     bool isRow = false;
     for(int j = 0; j < static_cast<int>(columns.size()); j++){
@@ -307,8 +308,12 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns,
             isRow = true;
         }
     }
-    if(isRow && !isUpdate){
+    if((isRow && !isUpdate) && (isRow && !isDelete)){
         std::cout << finalOutput << std::endl; 
+    }else if(isRow && isDelete){
+        bool deleted = true;
+        mainFile->seekp(curAddr+totalBytes-1, std::ios::beg);
+        mainFile->write(reinterpret_cast<const char*>(&deleted), sizeof(deleted));
     }else if(isRow && isUpdate){
         std::cout<<"====== In update ======"<<std::endl;
         mainFile->seekp(curAddr, std::ios::beg);
@@ -330,7 +335,7 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns,
 
 
 void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, std::fstream* mainFile, 
-    std::fstream* configFile, int keyColumn, bool isAllWhere, bool isAllCol, bool isUpdate){
+    std::fstream* configFile, int keyColumn, bool isAllWhere, bool isAllCol, bool isUpdate, bool isDelete){
     const size_t pageHeader = 96;
     const size_t cHeaderSize = configHeader;
     std::vector<char> cBuffer(cHeaderSize);
@@ -358,7 +363,7 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
             for(int i = 0; i<curHead.row;i++){
                 int newAddr = curAddr+96+(confHeader.totalBytes*i);
                 mainFile->seekg(newAddr, std::ios::beg);
-                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol, isUpdate, newAddr);
+                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol, isUpdate, newAddr, isDelete, confHeader.totalBytes);
                 count++;
             }
             if(count == confHeader.tempRow){
@@ -390,7 +395,7 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
             for(int i = 0; i<curHead.row;i++){
                 int newAddr = startingAddr+96+(confHeader.totalBytes*i);
                 mainFile->seekg(newAddr, std::ios::beg);
-                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol, isUpdate, newAddr);
+                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol, isUpdate, newAddr, isDelete, confHeader.totalBytes);
                 count++;
             }
             if(count == confHeader.tempRow){
@@ -567,7 +572,7 @@ void selection(std::string fileName, isReadFile readingFile){
             std::cout<<"ERROR WHERE Clause format. Please check if you have typed the WHERE" << std::endl;
             exit(0);
         }
-        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, false);
+        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, false, false);
     }else{
         std::cout <<"Select all columns [y] or specific [n]: ";
         std::string stopIN;
@@ -674,7 +679,7 @@ void selection(std::string fileName, isReadFile readingFile){
                 }
             }
         }
-        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, false);
+        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, false, false);
     }
 
     mainFile.close();
