@@ -78,6 +78,11 @@ int main(){
                     readingFile.isRead = true;
                     readingFile.readFile = &readFile;
                     updateRow(queryMode.fileName, readingFile, false);
+                }else if(queryMode.mode == 3){
+                    isReadFile readingFile;
+                    readingFile.isRead = true;
+                    readingFile.readFile = &readFile;
+                    updateRow(queryMode.fileName, readingFile, true);
                 }
                 std::cout << "\n" << std::endl;
             }

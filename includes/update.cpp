@@ -48,13 +48,15 @@ void updateRow(std::string fileName, isReadFile readingFile, bool isDelete){
     int curBytes = 0;
     if(readingFile.isRead){
         std::string line;
-        std::getline(*readingFile.readFile,line);
         std::vector <std::string> tokensColBig;
-        std::stringstream chek(line);
-        std::string intermediate;
-        while(getline(chek, intermediate, ','))
-        {
-            tokensColBig.push_back(intermediate);
+        if(!isDelete){
+            std::getline(*readingFile.readFile,line);
+            std::stringstream chek(line);
+            std::string intermediate;
+            while(getline(chek, intermediate, ','))
+            {
+                tokensColBig.push_back(intermediate);
+            }
         }
         for(int iF = 0; iF <  static_cast<int>(columnCount); iF++){
             if(tokensColBig.size() > columnCount){
@@ -75,15 +77,17 @@ void updateRow(std::string fileName, isReadFile readingFile, bool isDelete){
             colValue temp;
             temp.strComp = columnName;
             temp.isShow = false;
-            for(int cB = 0; cB < static_cast<int>(tokensColBig.size()); cB++){
-                std::vector <std::string> tokensColSmall = tokenize(tokensColBig[cB]);
-                if(tokensColSmall[0].compare(columnName) == 0){
-                    if(isChar){
-                        temp.strValue = tokensColSmall[2];
-                    }else{
-                        temp.intValue = std::stoi(tokensColSmall[2]);
+            if(!isDelete){
+                for(int cB = 0; cB < static_cast<int>(tokensColBig.size()); cB++){
+                    std::vector <std::string> tokensColSmall = tokenize(tokensColBig[cB]);
+                    if(tokensColSmall[0].compare(columnName) == 0){
+                        if(isChar){
+                            temp.strValue = tokensColSmall[2];
+                        }else{
+                            temp.intValue = std::stoi(tokensColSmall[2]);
+                        }
+                        temp.isShow = true;
                     }
-                    temp.isShow = true;
                 }
             }
             if(isChar){
@@ -128,7 +132,6 @@ void updateRow(std::string fileName, isReadFile readingFile, bool isDelete){
                 for(int jW = 0; jW < static_cast<int>(tokensWhereBig.size()); jW++){
                     std::vector <std::string> tokensWhereSmall = tokenize(tokensWhereBig[jW]);
                     if(tokensWhereSmall[0].compare(columnName) == 0){
-                        std::cout<<tokensWhereSmall[0]<<" - "<<tokensWhereSmall[1]<<" - "<<tokensWhereSmall[2]<<""<<std::endl;
                         isAllWhere = false;
                         isFoundInToken = true;
                         if(isChar){
@@ -160,7 +163,11 @@ void updateRow(std::string fileName, isReadFile readingFile, bool isDelete){
             std::cout << "ERROR: no where clause in update query, need where clause." <<std::endl;
             exit(0);
         }
-        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, true, false);
+        if(!isDelete){
+            seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, true, false);
+        }else{
+            seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, false, true);
+        }
     }else{
         for(int i = 0; i <  static_cast<int>(columnCount); i++){
             char columnName[30];
