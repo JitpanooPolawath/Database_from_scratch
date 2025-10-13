@@ -4,9 +4,9 @@ all: query
 
 reset: clean query
 
-query: main.o datapage.o component.o readInput.o insertion.o selection.o
+query: main.o datapage.o component.o readInput.o insertion.o selection.o update.o
 	@echo "Producing query application"
-	g++ $(CFLAG) main.o datapage.o component.o readInput.o insertion.o selection.o -o query # Use g++ for linking
+	g++ $(CFLAG) main.o datapage.o component.o readInput.o insertion.o selection.o update.o -o query # Use g++ for linking
 	@chmod +x query
 
 main.o: main.cpp
@@ -26,6 +26,9 @@ insertion.o: includes/insertion.cpp includes/insertion.h
 
 selection.o: includes/selection.cpp includes/selection.h
 	@g++ $(CFLAG) -c includes/selection.cpp
+
+update.o: includes/update.cpp includes/update.h
+	@g++ $(CFLAG) -c includes/update.cpp
 
 clean:
 	@echo "Removing .o .mdf .ldf files"

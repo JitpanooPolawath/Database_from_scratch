@@ -126,7 +126,7 @@ int reTraversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr,
 
 
 void outputRow(std::fstream* mainFile, std::vector<colValue> columns, 
-    std::vector<operValue> clauses, bool isAllWhere, bool isAllCol){
+    std::vector<operValue> clauses, bool isAllWhere, bool isAllCol, bool isUpdate, int curAddr){
     std::string finalOutput = "";
     bool isRow = false;
     for(int j = 0; j < static_cast<int>(columns.size()); j++){
@@ -276,14 +276,30 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns,
             isRow = true;
         }
     }
-    if(isRow){
+    if(isRow && !isUpdate){
         std::cout << finalOutput << std::endl; 
+    }else if(isRow && isUpdate){
+        std::cout<<"====== In update ======"<<std::endl;
+        mainFile->seekp(curAddr, std::ios::beg);
+        for(int u = 0; u < static_cast<int>(columns.size()); u++){
+            if(columns[u].isShow){
+                if(columns[u].isChar){
+                    char upString[columns[u].size] = {0};
+                    std::strcpy(upString,columns[u].strValue.c_str());
+                    mainFile->write(upString, columns[u].size);
+                }else{
+                    mainFile->write(reinterpret_cast<const char*>(&columns[u].intValue), sizeof(uint32_t));
+                }
+            }else{
+                mainFile->seekp(curAddr+columns[u].size);
+            }
+        }
     }
 }
 
 
 void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, std::fstream* mainFile, 
-    std::fstream* configFile, int keyColumn, bool isAllWhere, bool isAllCol){
+    std::fstream* configFile, int keyColumn, bool isAllWhere, bool isAllCol, bool isUpdate){
     const size_t pageHeader = 96;
     const size_t cHeaderSize = 9;
     std::vector<char> cBuffer(cHeaderSize);
@@ -309,8 +325,9 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
             pHeader curHead;
             getHeader(bufferP, mainFile, &curHead, curAddr);
             for(int i = 0; i<curHead.row;i++){
-                mainFile->seekg(curAddr+96+(confHeader.totalBytes*i), std::ios::beg);
-                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol);
+                int newAddr = curAddr+96+(confHeader.totalBytes*i);
+                mainFile->seekg(newAddr, std::ios::beg);
+                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol, isUpdate, newAddr);
                 count++;
             }
             if(count == confHeader.tempRow){
@@ -340,8 +357,9 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
             pHeader curHead;
             getHeader(bufferP, mainFile, &curHead, startingAddr);
             for(int i = 0; i<curHead.row;i++){
-                mainFile->seekg(startingAddr+96+(confHeader.totalBytes*i), std::ios::beg);
-                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol);
+                int newAddr = startingAddr+96+(confHeader.totalBytes*i);
+                mainFile->seekg(newAddr, std::ios::beg);
+                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol, isUpdate, newAddr);
                 count++;
             }
             if(count == confHeader.tempRow){
@@ -524,7 +542,7 @@ void selection(std::string fileName, isReadFile readingFile){
             std::cout<<"ERROR WHERE Clause format. Please check if you have typed the WHERE" << std::endl;
             exit(0);
         }
-        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol);
+        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, false);
     }else{
         std::cout <<"Select all columns [y] or specific [n]: ";
         std::string stopIN;
@@ -631,7 +649,7 @@ void selection(std::string fileName, isReadFile readingFile){
                 }
             }
         }
-        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol);
+        seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, false);
     }
 
     mainFile.close();

@@ -6,6 +6,7 @@
 #include "includes/readInput.h"
 #include "includes/insertion.h"
 #include "includes/selection.h"
+#include "includes/update.h"
 
 void createTable(datapage* filePage, isReadFile readingFile){
         filePage->createRoot();
@@ -96,7 +97,6 @@ int main(){
                 readingFile.readFile = nullptr;
                 createTable(&filePage, readingFile);
             }else if(queryMode.mode == 1){
-                // std::vector<unsigned char> inputtedRow;
                 insertionRow inputtedRow = readInsertion(queryMode.fileName, false, "");
                 insert(inputtedRow.row, queryMode.fileName, 0,inputtedRow.min,0);
             }else if(queryMode.mode == 4){
@@ -104,6 +104,11 @@ int main(){
                 readingFile.isRead = false;
                 readingFile.readFile = nullptr;
                 selection(queryMode.fileName, readingFile);
+            }else if(queryMode.mode == 2){
+                isReadFile readingFile;
+                readingFile.isRead = false;
+                readingFile.readFile = nullptr;
+                updateRow(queryMode.fileName, readingFile);
             }
             queryMode = readInitialInput(true, "");
         }
