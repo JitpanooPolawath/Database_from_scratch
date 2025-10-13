@@ -278,6 +278,10 @@ insertionRow readInsertion(std::string inputFileName,  bool isFile, std::string 
                     );
                 }
             }
+            // Deleted column
+            bool deletedColumn = 0;
+            unsigned char* bytes = reinterpret_cast<unsigned char*>(&deletedColumn);
+            storedBytes.insert(storedBytes.end(), bytes, bytes + sizeof(bool));
             std::cout << "====== Row parsed ======" << std::endl;
             std::cout << "row: " <<fullOutput << std::endl;
             logFile.close();

@@ -439,21 +439,18 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     std::cout<<"previous datapage address: "<<curHead.prevAddr<<std::endl;
     std::cout<<"next datapage address: "<<curHead.nextAddr<<std::endl;
 
-    mainFile.seekg(theAddr+96+confHeader.keyBytes-4,std::ios::beg);
     std::cout<<"====== In for-loop ======"<<std::endl;
     int count = curHead.row;
     bool foundDelete = false;
     for(int i = 0; i < curHead.row; i++){
+        mainFile.seekg(theAddr+96+confHeader.keyBytes-4+(i*confHeader.totalBytes),std::ios::beg);
         uint32_t curKeyVal;
         mainFile.read(reinterpret_cast<char*>(&curKeyVal),sizeof(curKeyVal));
         std::cout<<"current value: "<<curKeyVal<<std::endl;
-        if(minimum < curKeyVal){
-            count = i;
-            break;
-        }else if(minimum == curKeyVal){
+        if(minimum == curKeyVal){
             mainFile.seekg(confHeader.totalBytes-4-1,std::ios::cur);
             mainFile.read(reinterpret_cast<char*>(&foundDelete),1);
-            std::cout<<static_cast<int>(foundDelete)<<std::endl;
+            std::cout<<i<<std::endl;
             if(!foundDelete){
                 std::cout<<"ID already exist in table. Insertion failed!"<<std::endl;
                 return;
@@ -463,8 +460,10 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
                 break;
             }
             
+        }else if(minimum < curKeyVal){
+            count = i;
+            break;
         }
-        mainFile.seekg(theAddr+96+confHeader.keyBytes-4+(i*confHeader.totalBytes),std::ios::beg);
     }
     std::cout<<"====== Inputting rows ======"<<std::endl;
     // Copy elements
