@@ -7,9 +7,12 @@ void updateRow(std::string fileName, isReadFile readingFile){
     std::fstream mainFile;
     std::string lFileName = fileName + "_config" +".ldf";
     std::fstream logFile;
+    std::string lTFileName = fileName + "_log" +".ldf";
+    std::fstream lTainFile;
     mainFile.open(mFileName, std::ios::in | std::ios::binary|std::ios::out);
     logFile.open(lFileName, std::ios::in | std::ios::binary|std::ios::out);
-    if(!mainFile.is_open() || !logFile.is_open()){
+    lTainFile.open(lTFileName, std::ios::in | std::ios::binary|std::ios::out);
+    if(!mainFile.is_open() || !logFile.is_open() || !lTainFile.is_open()){
         std::cout << "File open error at selection" << std::endl;
         exit(1);
     }
@@ -39,7 +42,7 @@ void updateRow(std::string fileName, isReadFile readingFile){
     std::vector<colValue> columnArr;
     columnArr.reserve(columnCount);
     uint8_t prev = 0;
-    logFile.seekg(9,std::ios::beg);
+    logFile.seekg(configHeader,std::ios::beg);
     bool isAllCol = true;
     int keyColumn = -1;
     int curBytes = 0;
@@ -95,7 +98,7 @@ void updateRow(std::string fileName, isReadFile readingFile){
             prev = countBytes;
         }
             // WHERE clause
-        logFile.seekg(9,std::ios::beg);
+        logFile.seekg(configHeader,std::ios::beg);
         std::getline(*readingFile.readFile,line);
         if(line.compare("WHERE") == 0){
             isAllWhere = false;
@@ -210,7 +213,7 @@ void updateRow(std::string fileName, isReadFile readingFile){
             prev = countBytes;
         }
         std::cout << "====== Where column ======" << std::endl; 
-        logFile.seekg(9,std::ios::beg);
+        logFile.seekg(configHeader,std::ios::beg);
         int whereCount = 0;
         std::string stopIN;
         for(int j = 0; j <  static_cast<int>(columnCount); j++){
@@ -273,6 +276,8 @@ void updateRow(std::string fileName, isReadFile readingFile){
         }
         seTraversal(opArr,columnArr,&mainFile,&logFile,keyColumn,isAllWhere, isAllCol, true);
     }
+    updateLogTimestamp(1,&lTainFile);
     mainFile.close();
     logFile.close();
+    lTainFile.close();
 }

@@ -115,6 +115,12 @@ int main(){
                 readingFile.readFile = nullptr;
                 updateRow(queryMode.fileName, readingFile);
             }
+            else if(queryMode.mode == 3){
+                isReadFile readingFile;
+                readingFile.isRead = false;
+                readingFile.readFile = nullptr;
+                updateRow(queryMode.fileName, readingFile);
+            }
             queryMode = readInitialInput(true, "");
         }
     }

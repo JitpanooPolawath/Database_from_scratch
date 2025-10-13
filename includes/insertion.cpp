@@ -409,7 +409,7 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     }else{
         theAddr = bothAddr.prevAddr;
     }
-    const size_t cHeaderSize = 9;
+    const size_t cHeaderSize = configHeader;
     std::vector<char> cBuffer(cHeaderSize);
     cHeader confHeader;
     getConfig(cBuffer,&lainFile,&confHeader);

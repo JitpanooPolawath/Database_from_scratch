@@ -332,7 +332,7 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns,
 void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, std::fstream* mainFile, 
     std::fstream* configFile, int keyColumn, bool isAllWhere, bool isAllCol, bool isUpdate){
     const size_t pageHeader = 96;
-    const size_t cHeaderSize = 9;
+    const size_t cHeaderSize = configHeader;
     std::vector<char> cBuffer(cHeaderSize);
     cHeader confHeader;
     configFile->seekg(0,std::ios::beg);
@@ -444,7 +444,7 @@ void selection(std::string fileName, isReadFile readingFile){
     std::vector<colValue> columnArr;
     columnArr.reserve(columnCount);
     uint8_t prev = 0;
-    logFile.seekg(9,std::ios::beg);
+    logFile.seekg(configHeader,std::ios::beg);
     bool isAllCol = true;
     int keyColumn = -1;
     int curBytes = 0;
@@ -499,7 +499,7 @@ void selection(std::string fileName, isReadFile readingFile){
             prev = countBytes;
 
         }
-        logFile.seekg(9,std::ios::beg);
+        logFile.seekg(configHeader,std::ios::beg);
         std::getline(*readingFile.readFile,line);
         if(line.empty()){
             isAllWhere = true;
@@ -610,7 +610,7 @@ void selection(std::string fileName, isReadFile readingFile){
         }
         // where clause
         std::cout << "====== Where column ======" << std::endl; 
-        logFile.seekg(9,std::ios::beg);
+        logFile.seekg(configHeader,std::ios::beg);
         std::cout <<"Select all columns [y] or specific [n]: ";
         std::cin >> stopIN;
         int whereCount = 0;
