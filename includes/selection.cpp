@@ -188,7 +188,6 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns,
                 }
             }
         }
-        std::cout<<"ALLWHERE: "<<isAllWhere<<" opera: "<<clauses[j].operType<<" ISROW: "<<isRow <<" Column: "<<columns[j].strComp<<std::endl;
         if(!isAllWhere){       
             switch(clauses[j].operType){
                 case 0:
