@@ -309,7 +309,11 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns,
         }
     }
     if((isRow && !isUpdate) && (isRow && !isDelete)){
-        std::cout << finalOutput << std::endl; 
+        bool foundDelete = false;
+        mainFile->read(reinterpret_cast<char*>(&foundDelete),1);
+        if(!foundDelete){
+            std::cout << finalOutput << std::endl; 
+        }
     }else if(isRow && isDelete){
         bool deleted = true;
         mainFile->seekp(curAddr+totalBytes-1, std::ios::beg);
