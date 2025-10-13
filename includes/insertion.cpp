@@ -439,9 +439,10 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     std::cout<<"previous datapage address: "<<curHead.prevAddr<<std::endl;
     std::cout<<"next datapage address: "<<curHead.nextAddr<<std::endl;
 
-    mainFile.seekg(theAddr+96+confHeader.keyBytes-4);
+    mainFile.seekg(theAddr+96+confHeader.keyBytes-4,std::ios::beg);
     std::cout<<"====== In for-loop ======"<<std::endl;
     int count = curHead.row;
+    bool foundDelete = false;
     for(int i = 0; i < curHead.row; i++){
         uint32_t curKeyVal;
         mainFile.read(reinterpret_cast<char*>(&curKeyVal),sizeof(curKeyVal));
@@ -450,10 +451,20 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
             count = i;
             break;
         }else if(minimum == curKeyVal){
-            std::cout<<"ID already exist in table. Insertion failed!";
-            return;
+            mainFile.seekg(confHeader.totalBytes-4-1,std::ios::cur);
+            mainFile.read(reinterpret_cast<char*>(&foundDelete),1);
+            std::cout<<static_cast<int>(foundDelete)<<std::endl;
+            if(!foundDelete){
+                std::cout<<"ID already exist in table. Insertion failed!"<<std::endl;
+                return;
+            }else{
+                std::cout<<"ID was deleted, overwriting row."<<std::endl;
+                count = i;
+                break;
+            }
+            
         }
-        mainFile.seekg(confHeader.totalBytes-4,std::ios::cur);
+        mainFile.seekg(theAddr+96+confHeader.keyBytes-4+(i*confHeader.totalBytes),std::ios::beg);
     }
     std::cout<<"====== Inputting rows ======"<<std::endl;
     // Copy elements
@@ -462,49 +473,51 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
     uint32_t endingRowAddr = (curHead.curAddr + 96) + (curHead.row * confHeader.totalBytes);
     uint32_t lastStartRowAddr = endingRowAddr - confHeader.totalBytes;
     uint32_t lastEndRowAddr = endingRowAddr;
-    // Insertion
-    bool skipCopy = false;
-    if(count == curHead.row){
-        skipCopy = true;
-    }
-    if(!skipCopy){
-        copyBytes(&mainFile,startingRowAddr,endingRowAddr,destiRowAddr);
-    }
     // std::cout << startingRowAddr << " " << endingRowAddr << " " << lastStartRowAddr << " " << lastEndRowAddr<<std::endl;
     int writePos = theAddr+96+(count * confHeader.totalBytes);
     mainFile.seekp(writePos,std::fstream::beg);
-    mainFile.write(reinterpret_cast<const char*>(inputtedRow.data()),inputtedRow.size());
-    bool isBytesLeft = true;
-    int updatedBytesLeft = curHead.bytesLeft - confHeader.totalBytes;
-    std::vector<char> lastElementRow = copyRowBytes(&mainFile, lastStartRowAddr, lastEndRowAddr, confHeader.totalBytes);
-    if(updatedBytesLeft < 0){
-        isBytesLeft = false; 
-        if(skipCopy){
-            std::vector<char> lastElementRow(inputtedRow.begin(), inputtedRow.end());
+    if(foundDelete){
+        mainFile.write(reinterpret_cast<const char*>(inputtedRow.data()),inputtedRow.size());
+    }else{
+        // Insertion
+        bool skipCopy = false;
+        if(count == curHead.row){
+            skipCopy = true;
+        }
+        if(!skipCopy){
+            copyBytes(&mainFile,startingRowAddr,endingRowAddr,destiRowAddr);
+        }
+        mainFile.write(reinterpret_cast<const char*>(inputtedRow.data()),inputtedRow.size());
+        bool isBytesLeft = true;
+        int updatedBytesLeft = curHead.bytesLeft - confHeader.totalBytes;
+        std::vector<char> lastElementRow = copyRowBytes(&mainFile, lastStartRowAddr, lastEndRowAddr, confHeader.totalBytes);
+        if(updatedBytesLeft < 0){
+            isBytesLeft = false; 
+            if(skipCopy){
+                std::vector<char> lastElementRow(inputtedRow.begin(), inputtedRow.end());
+            }
+        }
+        std::cout<<"====== Updating datapage header ======"<<std::endl;
+        if(isBytesLeft){
+            updateHeader(&mainFile,theAddr,updatedBytesLeft,++curHead.row, minimum, false);
+            updateInterRow(&mainFile,intermediateAddr+96+(8*curHead.curID),minimum);
+            updateHeader(&mainFile,intermediateAddr,0,0, minimum, true);
+            updateInterRow(&mainFile,0+96+(8*interHead.curID),minimum);
+        }
+        std::cout<<"====== Updating config & log file ======"<<std::endl;
+        updateConfig(++confHeader.tempRow, &lainFile);
+         // Linear insertion. Inserting into the next datapage
+        if(!isBytesLeft){
+            linearInsert(lastElementRow, mFileName,&mainFile, curHead.curID, 
+                interHead.row, interHead.curID, curHead.nextAddr, 
+                confHeader.totalBytes, confHeader.keyBytes);
         }
     }
-
-    std::cout<<"====== Updating datapage header ======"<<std::endl;
-    if(isBytesLeft){
-        updateHeader(&mainFile,theAddr,updatedBytesLeft,++curHead.row, minimum, false);
-        updateInterRow(&mainFile,intermediateAddr+96+(8*curHead.curID),minimum);
-        updateHeader(&mainFile,intermediateAddr,0,0, minimum, true);
-        updateInterRow(&mainFile,0+96+(8*interHead.curID),minimum);
-    }
-    std::cout<<"====== Updating config & log file ======"<<std::endl;
     updateLogTimestamp(0,&lTainFile);
-    updateConfig(++confHeader.tempRow, &lainFile);
     std::cout<<"====== Updating intermediate header ======"<<std::endl;
     std::cout<<"====== Closing files ======"<<std::endl;
     mainFile.close();
     lainFile.close();
     lTainFile.close();
-
-    // Linear insertion. Inserting into the next datapage
-    if(!isBytesLeft){
-        linearInsert(lastElementRow, mFileName,&mainFile, curHead.curID, 
-            interHead.row, interHead.curID, curHead.nextAddr, 
-            confHeader.totalBytes, confHeader.keyBytes);
-    }
 
 }
