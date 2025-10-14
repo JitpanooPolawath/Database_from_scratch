@@ -62,11 +62,23 @@ int main(){
                     // std::vector<unsigned char> inputtedRow;
                     std::string fileInRow;
                     while(getline(readFile,fileInRow)){
+                        insertionRow inputtedRow;
                         if(fileInRow.empty()){
                             break;
-                        }
-                        insertionRow inputtedRow = readInsertion(queryMode.fileName, true, fileInRow);
-                        insert(inputtedRow.row, queryMode.fileName, 0,inputtedRow.min,0);
+                        }else if(fileInRow.compare("FILE") == 0){
+                            std::string csvFileName;
+                            getline(readFile,csvFileName);
+                            std::fstream csvFile;
+                            csvFile.open(csvFileName, std::ios::in);
+                            std::string fileInRow;
+                            while(getline(csvFile,fileInRow)){
+                                inputtedRow = readInsertion(queryMode.fileName, true, fileInRow);
+                                insert(inputtedRow.row, queryMode.fileName, 0,inputtedRow.min,0);
+                            }
+                        }else{
+                            inputtedRow = readInsertion(queryMode.fileName, true, fileInRow);
+                            insert(inputtedRow.row, queryMode.fileName, 0,inputtedRow.min,0);
+                        } 
                     }
                 }else if(queryMode.mode == 4){
                     isReadFile readingFile;

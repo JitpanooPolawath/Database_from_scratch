@@ -446,7 +446,7 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
         mainFile.seekg(theAddr+96+confHeader.keyBytes-4+(i*confHeader.totalBytes),std::ios::beg);
         uint32_t curKeyVal;
         mainFile.read(reinterpret_cast<char*>(&curKeyVal),sizeof(curKeyVal));
-        std::cout<<"current value: "<<curKeyVal<<std::endl;
+        std::cout<<"current value: "<<curKeyVal<<" Compared: "<<minimum<<std::endl;
         if(minimum == curKeyVal){
             mainFile.seekg(confHeader.totalBytes-4-1,std::ios::cur);
             mainFile.read(reinterpret_cast<char*>(&foundDelete),1);
@@ -484,8 +484,11 @@ void insert(std::vector<unsigned char> inputtedRow, std::string fileName, int de
             skipCopy = true;
         }
         if(!skipCopy){
+            std::cout<<"====== In copy bytes ======"<<std::endl;
             copyBytes(&mainFile,startingRowAddr,endingRowAddr,destiRowAddr);
         }
+        writePos = theAddr+96+(count * confHeader.totalBytes);
+        mainFile.seekp(writePos,std::fstream::beg);
         mainFile.write(reinterpret_cast<const char*>(inputtedRow.data()),inputtedRow.size());
         bool isBytesLeft = true;
         int updatedBytesLeft = curHead.bytesLeft - confHeader.totalBytes;

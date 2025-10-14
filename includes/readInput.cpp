@@ -227,7 +227,7 @@ insertionRow readInsertion(std::string inputFileName,  bool isFile, std::string 
             std::vector <std::string> tokens;
             std::stringstream check1(readLine);
             std::string intermediate;
-            while(getline(check1, intermediate, '|'))
+            while(getline(check1, intermediate, ','))
             {
                 tokens.push_back(intermediate);
             }
