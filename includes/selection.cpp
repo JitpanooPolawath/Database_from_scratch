@@ -158,14 +158,21 @@ int reTraversal(std::fstream* mainFile,int depth, uint32_t minimum, int curAddr,
 
 void outputRow(std::fstream* mainFile, std::vector<colValue> columns, 
     std::vector<operValue> clauses, bool isAllWhere, bool isAllCol, bool isUpdate,
-    int curAddr, bool isDelete, uint32_t totalBytes){
+    int curAddr, bool isDelete, uint32_t totalBytes, int* rowCount, std::fstream* outputFile){
     std::string finalOutput = "";
     bool isRow = false;
     for(int j = 0; j < static_cast<int>(columns.size()); j++){
         std::vector<char> rowBuffer(columns[j].size);
         mainFile->read(rowBuffer.data(), rowBuffer.size());
+        int nullCount = 0;
+        for(int m = 0; m < static_cast<int>(rowBuffer.size()); m++){
+            if(rowBuffer[m] == '\0'){
+                nullCount = m;
+                break;
+            }
+        }
         int integerOutput = 0;
-        std::string output(rowBuffer.data(), columns[j].size);
+        std::string output(rowBuffer.data(), nullCount);
         if(columns[j].isChar){
             if(isAllCol){
                 finalOutput = finalOutput + output +"|";
@@ -313,6 +320,8 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns,
         mainFile->read(reinterpret_cast<char*>(&foundDelete),1);
         if(!foundDelete){
             std::cout << finalOutput << std::endl; 
+            *rowCount+=1;
+            *outputFile << finalOutput + "\n";
         }
     }else if(isRow && isDelete){
         bool deleted = true;
@@ -341,20 +350,25 @@ void outputRow(std::fstream* mainFile, std::vector<colValue> columns,
 void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, std::fstream* mainFile, 
     std::fstream* configFile, int keyColumn, bool isAllWhere, bool isAllCol, bool isUpdate, bool isDelete){
     const size_t pageHeader = 96;
+    int rowCount = 0;
     const size_t cHeaderSize = configHeader;
     std::vector<char> cBuffer(cHeaderSize);
     cHeader confHeader;
     configFile->seekg(0,std::ios::beg);
     getConfig(cBuffer,configFile,&confHeader);
+    std::fstream outputFile;
+    outputFile.open("output.txt",std::ios::out);
     std::cout<<"====== Outputting Rows ======"<<std::endl;
-    std::cout<<"Column Name: ";
     for(int i = 0; i < static_cast<int>(columns.size()); i++){
         if(columns[i].isShow){
             std::cout<< columns[i].strComp <<"|";
+            outputFile << columns[i].strComp + "|";
         }else if(isAllCol){
             std::cout<< columns[i].strComp <<"|";
+            outputFile << columns[i].strComp + "|";
         }
     }
+    outputFile << "\n";
     std::cout<<std::endl;
     if(isAllWhere){
         int curAddr = 8192+8192;
@@ -367,7 +381,7 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
             for(int i = 0; i<curHead.row;i++){
                 int newAddr = curAddr+96+(confHeader.totalBytes*i);
                 mainFile->seekg(newAddr, std::ios::beg);
-                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol, isUpdate, newAddr, isDelete, confHeader.totalBytes);
+                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol, isUpdate, newAddr, isDelete, confHeader.totalBytes, &rowCount, &outputFile);
                 count++;
             }
             if(count == confHeader.tempRow){
@@ -399,7 +413,7 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
             for(int i = 0; i<curHead.row;i++){
                 int newAddr = startingAddr+96+(confHeader.totalBytes*i);
                 mainFile->seekg(newAddr, std::ios::beg);
-                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol, isUpdate, newAddr, isDelete, confHeader.totalBytes);
+                outputRow(mainFile, columns, clauses, isAllWhere, isAllCol, isUpdate, newAddr, isDelete, confHeader.totalBytes, &rowCount, &outputFile);
                 count++;
             }
             if(count == confHeader.tempRow){
@@ -412,8 +426,10 @@ void seTraversal(std::vector<operValue> clauses, std::vector<colValue> columns, 
             startingAddr+=8192;
         }
     }
-    
-
+    if(!isDelete && !isUpdate){
+        outputFile.close();
+        std::cout<<"Total row count: "<<rowCount<<std::endl;
+    }
 }
 
 void selection(std::string fileName, isReadFile readingFile){
