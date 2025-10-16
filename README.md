@@ -1,6 +1,6 @@
 # Database (table) from scratch using C++
 The project aims to create a SQL-like table/database from scratch using C++ and its library.
-[link for YouTube](https://www.youtube.com/)
+[link for YouTube](https://www.youtube.com/playlist?list=PLkSJTby7z52IBGwGkcIvb4h7W3Fs_Ge0R)
 
 ## Specification to run locally
 You need to have a C++ 13.2 version or newer and <b>make</b> install on your device. Your device needs to support uint8_t, uint16_t, and uint32_t.
